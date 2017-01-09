@@ -97,14 +97,20 @@ Vagrant.configure(2) do |config|
       config.vm.provider :virtualbox do |vb|
          vb.customize ["modifyvm", :id, "--memory", "2560"]
          vb.customize ["modifyvm", :id, "--cpus", "2"]
-         vb.name = "workder-node1"
+         vb.name = "worker-node1"
       end
       worker_node1.vm.provision "shell", inline: <<-SHELL
        sudo apt-get update
        sudo apt-get install -y apt-transport-https ca-certificates
        sudo curl -fsSL https://test.docker.com/ | sh
        sudo usermod -aG docker ubuntu
+       # Load UCP images to allow ucp-agent to run
+       sudo cp /vagrant/ucp_images_2.1.0-tp2.tar.gz .
+       docker load < ucp_images_2.1.0-tp2.tar.gz
        ifconfig enp0s8 | grep 'inet addr:' | cut -d: -f2 | awk '{ print $1}' > /vagrant/worker-node1-ipaddr
+       export HUB_USERNAME=$(cat /vagrant/hub_username)
+       export HUB_PASSWORD=$(cat /vagrant/hub_password)
+       docker login -u ${HUB_USERNAME} -p ${HUB_PASSWORD}
        # Join Swarm as worker
        export UCP_IPADDR=$(cat /vagrant/ucp-vancouver-node1-ipaddr)
        export DTR_IPADDR=$(cat /vagrant/dtr-vancouver-node1-ipaddr)
