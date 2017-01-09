@@ -11,4 +11,4 @@ swarm-join-token-worker
 *_username
 *-token-mgr
 *-token-worker
-./machines
+.vagrant
