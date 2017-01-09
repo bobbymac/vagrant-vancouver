@@ -10,17 +10,17 @@ https://www.vagrantup.com/downloads.html
 ## Bring up/Resume UCP, DTR, and Jenkins nodes
 
 ```
-vagrant up ucp-node dtr-node jenkins-node lb-node app-node1
+vagrant up ucp-vancouver-node1 dtr-vancouver-node1 worker-node1
 ```
 
 ## Stop UCP, DTR, and Jenkins nodes
 
 ```
-vagrant halt ucp-node dtr-node jenkins-node lb-node app-node1
+vagrant halt ucp-vancouver-node1 dtr-vancouver-node1 worker-node1
 ```
 
 ## Destroy UCP, DTR, and Jenkins nodes
 
 ```
-vagrant destroy ucp-node dtr-node jenkins-node lb-node app-node1
+vagrant destroy ucp-vancouver-node1 dtr-vancouver-node1 worker-node1
 ```
