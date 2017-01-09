@@ -104,9 +104,6 @@ Vagrant.configure(2) do |config|
        sudo apt-get install -y apt-transport-https ca-certificates
        sudo curl -fsSL https://test.docker.com/ | sh
        sudo usermod -aG docker ubuntu
-       # Load UCP images to allow ucp-agent to run
-       sudo cp /vagrant/ucp_images_2.1.0-tp2.tar.gz .
-       docker load < ucp_images_2.1.0-tp2.tar.gz
        ifconfig eth1 | grep 'inet addr:' | cut -d: -f2 | awk '{ print $1}' > /vagrant/worker-node1-ipaddr
        # Join Swarm as worker
        export UCP_IPADDR=$(cat /vagrant/ucp-vancouver-node1-ipaddr)
@@ -115,127 +112,6 @@ Vagrant.configure(2) do |config|
        docker swarm join --token ${SWARM_JOIN_TOKEN_WORKER} ${UCP_IPADDR}:2377
      SHELL
     end
-
-    # # UCP2 node 3 (HA) for DDC setup
-    # config.vm.define "ucp2-node3" do |ucp2_node3|
-    #   ucp2_node3.vm.box = "ubuntu/trusty64"
-    #   ucp2_node3.vm.network "private_network", type: "dhcp"
-    #   ucp2_node3.vm.hostname = "ucp2-node3"
-    #   config.vm.provider :virtualbox do |vb|
-    #      vb.customize ["modifyvm", :id, "--memory", "2560"]
-    #      vb.customize ["modifyvm", :id, "--cpus", "2"]
-    #      vb.name = "ucp2-node3"
-    #   end
-    #   ucp2_node3.vm.provision "shell", inline: <<-SHELL
-    #    sudo apt-get update
-    #    sudo apt-get install -y apt-transport-https ca-certificates
-    #    sudo curl -fsSL https://packages.docker.com/1.12/install.sh | repo=testing sh
-    #    sudo usermod -aG docker vagrant
-    #    ifconfig eth1 | grep 'inet addr:' | cut -d: -f2 | awk '{ print $1}' > /vagrant/ucp2-ipaddr3
-    #    # Load DDC images
-    #    sudo cp /vagrant/ucp-2.0.0-beta.tar.gz .
-    #    docker load < ucp-2.0.0-beta.tar.gz
-    #    # Setup Replica manager node
-    #    export UCP_IPADDR=$(cat /vagrant/ucp2-ipaddr)
-    #    export UCP_IPADDR3=$(cat /vagrant/ucp2-ipaddr3)
-    #    export SWARM_JOIN_TOKEN=$(cat /vagrant/swarm-join-token)
-    #    docker swarm join --listen-addr ${UCP_IPADDR3} --token ${SWARM_JOIN_TOKEN} ${UCP_IPADDR}:2377
-    #  SHELL
-    # end
-    #
-    # # DTR Node 1 for DDC setup
-    # config.vm.define "dtr-node1" do |dtr_node1|
-    #   dtr_node1.vm.box = "ubuntu/trusty64"
-    #   dtr_node1.vm.network "private_network", type: "dhcp"
-    #   dtr_node1.vm.hostname = "dtr-node1"
-    #   config.vm.provider :virtualbox do |vb|
-    #      vb.customize ["modifyvm", :id, "--memory", "2560"]
-    #      vb.customize ["modifyvm", :id, "--cpus", "2"]
-    #      vb.name = "dtr-node1"
-    #   end
-    #   dtr_node1.vm.provision "shell", inline: <<-SHELL
-    #     sudo apt-get update
-    #     sudo apt-get install -y apt-transport-https ca-certificates
-    #     sudo curl -fsSL https://packages.docker.com/1.12/install.sh | repo=testing sh
-    #     sudo usermod -aG docker vagrant
-    #     # Load DDC images
-    #     sudo cp /vagrant/ucp-2.0.0-beta.tar.gz .
-    #     docker load < ucp-2.0.0-beta.tar.gz
-    #     # Join UCP Swarm
-    #     ifconfig eth1 | grep 'inet addr:' | cut -d: -f2 | awk '{ print $1}' > /vagrant/dtr-ipaddr
-    #     cat /dev/urandom | tr -dc 'a-f0-9' | fold -w 12 | head -n 1 > /vagrant/dtr-replica-id
-    #     export UCP_IPADDR=$(cat /vagrant/ucp2-ipaddr)
-    #     export DTR_IPADDR=$(cat /vagrant/dtr-ipaddr)
-    #     export SWARM_JOIN_TOKEN_WORKER=$(cat /vagrant/swarm-join-token-worker)
-    #     export DTR_REPLICA_ID=$(cat /vagrant/dtr-replica-id)
-    #     docker swarm join --token ${SWARM_JOIN_TOKEN_WORKER} ${UCP_IPADDR}:2377
-    #     # Install DTR
-    #     curl -k https://${UCP_IPADDR}/ca > ucp-ca.pem
-    #     docker run --rm docker/dtr:2.1.0-beta0 install --ucp-url $UCP_IPADDR --ucp-node dtr-node1 --replica-id $DTR_REPLICA_ID --dtr-external-url $DTR_IPADDR --ucp-username admin --ucp-password dockeradmin --ucp-ca "$(cat ucp-ca.pem)"
-    #   SHELL
-    # end
-    #
-    # # DTR Node 2 for DDC setup
-    # config.vm.define "dtr-node2" do |dtr_node2|
-    #   dtr_node2.vm.box = "ubuntu/trusty64"
-    #   dtr_node2.vm.network "private_network", type: "dhcp"
-    #   dtr_node2.vm.hostname = "dtr-node2"
-    #   config.vm.provider :virtualbox do |vb|
-    #      vb.customize ["modifyvm", :id, "--memory", "2560"]
-    #      vb.customize ["modifyvm", :id, "--cpus", "2"]
-    #      vb.name = "dtr-node2"
-    #   end
-    #   dtr_node2.vm.provision "shell", inline: <<-SHELL
-    #     sudo apt-get update
-    #     sudo apt-get install -y apt-transport-https ca-certificates
-    #     sudo curl -fsSL https://packages.docker.com/1.12/install.sh | repo=testing sh
-    #     sudo usermod -aG docker vagrant
-    #     # Load DDC images
-    #     sudo cp /vagrant/ucp-2.0.0-beta.tar.gz .
-    #     docker load < ucp-2.0.0-beta.tar.gz
-    #     # Join UCP Swarm
-    #     ifconfig eth1 | grep 'inet addr:' | cut -d: -f2 | awk '{ print $1}' > /vagrant/dtr-ipaddr2
-    #     export UCP_IPADDR=$(cat /vagrant/ucp2-ipaddr)
-    #     export DTR_IPADDR=$(cat /vagrant/dtr-ipaddr2)
-    #     export SWARM_JOIN_TOKEN_WORKER=$(cat /vagrant/swarm-join-token-worker)
-    #     export DTR_REPLICA_ID=$(cat /vagrant/dtr-replica-id)
-    #     docker swarm join  --token ${SWARM_JOIN_TOKEN_WORKER} ${UCP_IPADDR}:2377
-    #     # Install DTR
-    #     curl -k https://${UCP_IPADDR}/ca > ucp-ca.pem
-    #     docker run --rm docker/dtr:2.1.0-beta0 join --ucp-url $UCP_IPADDR --ucp-node dtr-node2 --existing-replica-id $DTR_REPLICA_ID --ucp-username admin --ucp-password dockeradmin --ucp-ca "$(cat ucp-ca.pem)"
-    #   SHELL
-    # end
-    #
-    # # DTR Node 3 for DDC setup
-    # config.vm.define "dtr-node3" do |dtr_node3|
-    #   dtr_node3.vm.box = "ubuntu/trusty64"
-    #   dtr_node3.vm.network "private_network", type: "dhcp"
-    #   dtr_node3.vm.hostname = "dtr-node3"
-    #   config.vm.provider :virtualbox do |vb|
-    #      vb.customize ["modifyvm", :id, "--memory", "2560"]
-    #      vb.customize ["modifyvm", :id, "--cpus", "2"]
-    #      vb.name = "dtr-node3"
-    #   end
-    #   dtr_node3.vm.provision "shell", inline: <<-SHELL
-    #     sudo apt-get update
-    #     sudo apt-get install -y apt-transport-https ca-certificates
-    #     sudo curl -fsSL https://packages.docker.com/1.12/install.sh | repo=testing sh
-    #     sudo usermod -aG docker vagrant
-    #     # Load DDC images
-    #     sudo cp /vagrant/ucp-2.0.0-beta.tar.gz .
-    #     docker load < ucp-2.0.0-beta.tar.gz
-    #     # Join UCP Swarm
-    #     ifconfig eth1 | grep 'inet addr:' | cut -d: -f2 | awk '{ print $1}' > /vagrant/dtr-ipaddr3
-    #     export UCP_IPADDR=$(cat /vagrant/ucp2-ipaddr)
-    #     export DTR_IPADDR=$(cat /vagrant/dtr-ipaddr3)
-    #     export SWARM_JOIN_TOKEN_WORKER=$(cat /vagrant/swarm-join-token-worker)
-    #     export DTR_REPLICA_ID=$(cat /vagrant/dtr-replica-id)
-    #     docker swarm join  --token ${SWARM_JOIN_TOKEN_WORKER} ${UCP_IPADDR}:2377
-    #     # Install DTR
-    #     curl -k https://${UCP_IPADDR}/ca > ucp-ca.pem
-    #     docker run --rm docker/dtr:2.1.0-beta0 join --ucp-url $UCP_IPADDR --ucp-node dtr-node3 --existing-replica-id $DTR_REPLICA_ID --ucp-username admin --ucp-password dockeradmin --ucp-ca "$(cat ucp-ca.pem)"
-    #   SHELL
-    # end
 
   # Disable automatic box update checking. If you disable this, then
   # boxes will only be checked for updates when the user runs
