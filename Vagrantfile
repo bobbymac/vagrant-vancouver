@@ -104,7 +104,7 @@ Vagrant.configure(2) do |config|
        sudo apt-get install -y apt-transport-https ca-certificates
        sudo curl -fsSL https://test.docker.com/ | sh
        sudo usermod -aG docker ubuntu
-       ifconfig eth1 | grep 'inet addr:' | cut -d: -f2 | awk '{ print $1}' > /vagrant/worker-node1-ipaddr
+       ifconfig enp0s8 | grep 'inet addr:' | cut -d: -f2 | awk '{ print $1}' > /vagrant/worker-node1-ipaddr
        # Join Swarm as worker
        export UCP_IPADDR=$(cat /vagrant/ucp-vancouver-node1-ipaddr)
        export DTR_IPADDR=$(cat /vagrant/dtr-vancouver-node1-ipaddr)
