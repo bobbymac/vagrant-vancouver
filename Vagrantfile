@@ -25,7 +25,7 @@ Vagrant.configure(2) do |config|
       ucp_vancouver_node1.vm.provision "shell", inline: <<-SHELL
        sudo apt-get update
        sudo apt-get install -y apt-transport-https ca-certificates
-       sudo curl -fsSL https://test.docker.com/ | sh
+       sudo curl -fsSL https://packages.docker.com/1.13/install.sh | repo=testing sh
        sudo usermod -aG docker ubuntu
        ifconfig enp0s8 | grep 'inet addr:' | cut -d: -f2 | awk '{ print $1}' > /vagrant/ucp-vancouver-node1-ipaddr
        # Load UCP2 images
@@ -61,7 +61,7 @@ Vagrant.configure(2) do |config|
       dtr_vancouver_node1.vm.provision "shell", inline: <<-SHELL
         sudo apt-get update
         sudo apt-get install -y apt-transport-https ca-certificates
-        sudo curl -fsSL https://test.docker.com/ | sh
+        sudo curl -fsSL https://packages.docker.com/1.13/install.sh | repo=testing sh
         sudo usermod -aG docker ubuntu
         # Load UCP images to allow ucp-agent to run
         sudo cp /vagrant/ucp_images_2.1.0-tp2.tar.gz .
@@ -102,7 +102,7 @@ Vagrant.configure(2) do |config|
       worker_node1.vm.provision "shell", inline: <<-SHELL
        sudo apt-get update
        sudo apt-get install -y apt-transport-https ca-certificates
-       sudo curl -fsSL https://test.docker.com/ | sh
+       sudo curl -fsSL https://packages.docker.com/1.13/install.sh | repo=testing sh
        sudo usermod -aG docker ubuntu
        # Load UCP images to allow ucp-agent to run
        sudo cp /vagrant/ucp_images_2.1.0-tp2.tar.gz .
