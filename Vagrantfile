@@ -37,11 +37,10 @@ Vagrant.configure(2) do |config|
        docker swarm join-token manager | awk -F " " '/token/ {print $2}' > /vagrant/swarm-join-token-mgr
        docker swarm join-token worker | awk -F " " '/token/ {print $2}' > /vagrant/swarm-join-token-worker
        # Install registry certificates on client Docker daemon (only required for self-signed certs)
-       # export DTR_IPADDR=$(cat /vagrant/dtr-ipaddr)
+       # export DTR_IPADDR=$(cat /vagrant/dtr-vancouver-node1-ipaddr)
        # openssl s_client -connect ${DTR_IPADDR}:443 -showcerts </dev/null 2>/dev/null | openssl x509 -outform PEM | sudo tee /usr/local/share/ca-certificates/${DTR_IPADDR}.crt
        # sudo update-ca-certificates
        # sudo service docker restart
-       # Backup UCP to get certificates and keys
        docker run --rm --name ucp -v /var/run/docker.sock:/var/run/docker.sock docker/ucp:2.1.0-tp2 id | awk '{ print $1}' > /vagrant/ucp-vancouver-id
        export UCP_ID=$(cat /vagrant/ucp-vancouver-id)
        docker run --rm -i --name ucp -v /var/run/docker.sock:/var/run/docker.sock docker/ucp:2.1.0-tp2 backup --id ${UCP_ID} --root-ca-only --passphrase "secret" > /vagrant/backup.tar
@@ -86,6 +85,10 @@ Vagrant.configure(2) do |config|
         docker run --rm dockerhubenterprise/dtr:2.2.0-tp2 install --hub-username ${HUB_USERNAME} --hub-password ${HUB_PASSWORD} --ucp-url https://$UCP_IPADDR --ucp-node dtr-vancouver-node1 --replica-id $DTR_REPLICA_ID --dtr-external-url $DTR_IPADDR --ucp-username admin --ucp-password ${UCP_PASSWORD} --ucp-ca "$(cat ucp-ca.pem)"
         # Run backup of DTR
         docker run --rm dockerhubenterprise/dtr:2.2.0-tp2 backup --ucp-url https://$UCP_IPADDR --existing-replica-id ${DTR_REPLICA_ID} --ucp-username admin --ucp-password ${UCP_PASSWORD} --ucp-ca "$(cat ucp-ca.pem)" > /tmp/backup.tar
+        # Trust self-signed DTR CA
+        openssl s_client -connect ${DTR_IPADDR}:443 -showcerts </dev/null 2>/dev/null | openssl x509 -outform PEM | sudo tee /usr/local/share/ca-certificates/${DTR_IPADDR}.crt
+        sudo update-ca-certificates
+        sudo service docker restart
       SHELL
     end
 
@@ -116,6 +119,10 @@ Vagrant.configure(2) do |config|
        export DTR_IPADDR=$(cat /vagrant/dtr-vancouver-node1-ipaddr)
        export SWARM_JOIN_TOKEN_WORKER=$(cat /vagrant/swarm-join-token-worker)
        docker swarm join --token ${SWARM_JOIN_TOKEN_WORKER} ${UCP_IPADDR}:2377
+       # Trust self-signed DTR CA
+       openssl s_client -connect ${DTR_IPADDR}:443 -showcerts </dev/null 2>/dev/null | openssl x509 -outform PEM | sudo tee /usr/local/share/ca-certificates/${DTR_IPADDR}.crt
+       sudo update-ca-certificates
+       sudo service docker restart
      SHELL
     end
 
