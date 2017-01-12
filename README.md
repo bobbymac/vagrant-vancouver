@@ -7,6 +7,12 @@ Vagrant Virtualbox setup for UCP 2.1 and DTR 2.2
 https://www.vagrantup.com/downloads.html
 ```
 
+## Install Virtual Box
+
+```
+https://www.virtualbox.org/wiki/Downloads
+```
+
 ## Bring up/Resume UCP, DTR, and Jenkins nodes
 
 ```

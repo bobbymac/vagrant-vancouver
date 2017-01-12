@@ -12,3 +12,10 @@ swarm-join-token-worker
 *-token-mgr
 *-token-worker
 .vagrant
+jenkins
+ucp-bundle-admin
+*.pem
+*.pub
+*.cmd
+*.sh
+*.ps1

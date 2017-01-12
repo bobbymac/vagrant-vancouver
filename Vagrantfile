@@ -103,7 +103,7 @@ Vagrant.configure(2) do |config|
       worker_node1.vm.network "private_network", type: "dhcp"
       worker_node1.vm.hostname = "worker-node1"
       config.vm.provider :virtualbox do |vb|
-         vb.customize ["modifyvm", :id, "--memory", "3072"]
+         vb.customize ["modifyvm", :id, "--memory", "2048"]
          vb.customize ["modifyvm", :id, "--cpus", "2"]
          vb.name = "worker-node1"
       end
