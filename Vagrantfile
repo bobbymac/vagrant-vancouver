@@ -29,11 +29,15 @@ Vagrant.configure(2) do |config|
        sudo usermod -aG docker ubuntu
        ifconfig enp0s8 | grep 'inet addr:' | cut -d: -f2 | awk '{ print $1}' > /vagrant/ucp-vancouver-node1-ipaddr
        # Load UCP2 images
-       sudo cp /vagrant/ucp_images_2.1.0-tp2.tar.gz .
-       docker load < ucp_images_2.1.0-tp2.tar.gz
+       # sudo cp /vagrant/ucp_images_2.1.0-tp2.tar.gz .
+       # docker load < ucp_images_2.1.0-tp2.tar.gz
        export UCP_IPADDR=$(cat /vagrant/ucp-vancouver-node1-ipaddr)
        export UCP_PASSWORD=$(cat /vagrant/ucp_password)
-       docker run --rm --name ucp -v /var/run/docker.sock:/var/run/docker.sock -v /vagrant/docker_subscription_nautilus.lic:/docker_subscription.lic docker/ucp:2.1.0-tp2 install --host-address ${UCP_IPADDR} --admin-password ${UCP_PASSWORD}
+       export HUB_USERNAME=$(cat /vagrant/hub_username)
+       export HUB_PASSWORD=$(cat /vagrant/hub_password)
+       docker login -u ${HUB_USERNAME} -p ${HUB_PASSWORD}
+       docker pull docker/ucp:2.1.0-beta1
+       docker run --rm --name ucp -v /var/run/docker.sock:/var/run/docker.sock -v /vagrant/docker_subscription_nautilus.lic:/docker_subscription.lic docker/ucp:2.1.0-beta1 install --host-address ${UCP_IPADDR} --admin-password ${UCP_PASSWORD}
        docker swarm join-token manager | awk -F " " '/token/ {print $2}' > /vagrant/swarm-join-token-mgr
        docker swarm join-token worker | awk -F " " '/token/ {print $2}' > /vagrant/swarm-join-token-worker
        # Install registry certificates on client Docker daemon (only required for self-signed certs)
@@ -41,9 +45,9 @@ Vagrant.configure(2) do |config|
        # openssl s_client -connect ${DTR_IPADDR}:443 -showcerts </dev/null 2>/dev/null | openssl x509 -outform PEM | sudo tee /usr/local/share/ca-certificates/${DTR_IPADDR}.crt
        # sudo update-ca-certificates
        # sudo service docker restart
-       docker run --rm --name ucp -v /var/run/docker.sock:/var/run/docker.sock docker/ucp:2.1.0-tp2 id | awk '{ print $1}' > /vagrant/ucp-vancouver-id
+       docker run --rm --name ucp -v /var/run/docker.sock:/var/run/docker.sock docker/ucp:2.1.0-beta1 id | awk '{ print $1}' > /vagrant/ucp-vancouver-id
        export UCP_ID=$(cat /vagrant/ucp-vancouver-id)
-       docker run --rm -i --name ucp -v /var/run/docker.sock:/var/run/docker.sock docker/ucp:2.1.0-tp2 backup --id ${UCP_ID} --root-ca-only --passphrase "secret" > /vagrant/backup.tar
+       docker run --rm -i --name ucp -v /var/run/docker.sock:/var/run/docker.sock docker/ucp:2.1.0-beta1 backup --id ${UCP_ID} --root-ca-only --passphrase "secret" > /vagrant/backup.tar
      SHELL
     end
 
@@ -63,8 +67,8 @@ Vagrant.configure(2) do |config|
         sudo curl -fsSL https://packages.docker.com/1.13/install.sh | repo=testing sh
         sudo usermod -aG docker ubuntu
         # Load UCP images to allow ucp-agent to run
-        sudo cp /vagrant/ucp_images_2.1.0-tp2.tar.gz .
-        docker load < ucp_images_2.1.0-tp2.tar.gz
+        # sudo cp /vagrant/ucp_images_2.1.0-tp2.tar.gz .
+        # docker load < ucp_images_2.1.0-tp2.tar.gz
         # Login to Hub
         ifconfig enp0s8 | grep 'inet addr:' | cut -d: -f2 | awk '{ print $1}' > /vagrant/dtr-vancouver-node1-ipaddr
         export HUB_USERNAME=$(cat /vagrant/hub_username)
@@ -77,14 +81,15 @@ Vagrant.configure(2) do |config|
         export DTR_IPADDR=$(cat /vagrant/dtr-vancouver-node1-ipaddr)
         export SWARM_JOIN_TOKEN_WORKER=$(cat /vagrant/swarm-join-token-worker)
         export DTR_REPLICA_ID=$(cat /vagrant/dtr-replica-id)
+        docker pull docker/ucp:2.1.0-beta1
         docker swarm join --token ${SWARM_JOIN_TOKEN_WORKER} ${UCP_IPADDR}:2377
         # Wait for Join to complete
         sleep 30
         # Install DTR
         curl -k https://${UCP_IPADDR}/ca > ucp-ca.pem
-        docker run --rm dockerhubenterprise/dtr:2.2.0-tp2 install --hub-username ${HUB_USERNAME} --hub-password ${HUB_PASSWORD} --ucp-url https://$UCP_IPADDR --ucp-node dtr-vancouver-node1 --replica-id $DTR_REPLICA_ID --dtr-external-url $DTR_IPADDR --ucp-username admin --ucp-password ${UCP_PASSWORD} --ucp-ca "$(cat ucp-ca.pem)"
+        docker run --rm docker/dtr:2.2.0-beta1 install --hub-username ${HUB_USERNAME} --hub-password ${HUB_PASSWORD} --ucp-url https://$UCP_IPADDR --ucp-node dtr-vancouver-node1 --replica-id $DTR_REPLICA_ID --dtr-external-url $DTR_IPADDR --ucp-username admin --ucp-password ${UCP_PASSWORD} --ucp-ca "$(cat ucp-ca.pem)"
         # Run backup of DTR
-        docker run --rm dockerhubenterprise/dtr:2.2.0-tp2 backup --ucp-url https://$UCP_IPADDR --existing-replica-id ${DTR_REPLICA_ID} --ucp-username admin --ucp-password ${UCP_PASSWORD} --ucp-ca "$(cat ucp-ca.pem)" > /tmp/backup.tar
+        docker run --rm docker/dtr:2.2.0-beta1 --ucp-url https://$UCP_IPADDR --existing-replica-id ${DTR_REPLICA_ID} --ucp-username admin --ucp-password ${UCP_PASSWORD} --ucp-ca "$(cat ucp-ca.pem)" > /tmp/backup.tar
         # Trust self-signed DTR CA
         openssl s_client -connect ${DTR_IPADDR}:443 -showcerts </dev/null 2>/dev/null | openssl x509 -outform PEM | sudo tee /usr/local/share/ca-certificates/${DTR_IPADDR}.crt
         sudo update-ca-certificates
@@ -108,12 +113,13 @@ Vagrant.configure(2) do |config|
        sudo curl -fsSL https://packages.docker.com/1.13/install.sh | repo=testing sh
        sudo usermod -aG docker ubuntu
        # Load UCP images to allow ucp-agent to run
-       sudo cp /vagrant/ucp_images_2.1.0-tp2.tar.gz .
-       docker load < ucp_images_2.1.0-tp2.tar.gz
+       # sudo cp /vagrant/ucp_images_2.1.0-tp2.tar.gz .
+       # docker load < ucp_images_2.1.0-tp2.tar.gz
        ifconfig enp0s8 | grep 'inet addr:' | cut -d: -f2 | awk '{ print $1}' > /vagrant/worker-node1-ipaddr
        export HUB_USERNAME=$(cat /vagrant/hub_username)
        export HUB_PASSWORD=$(cat /vagrant/hub_password)
        docker login -u ${HUB_USERNAME} -p ${HUB_PASSWORD}
+       docker pull docker/ucp:2.1.0-beta1
        # Join Swarm as worker
        export UCP_IPADDR=$(cat /vagrant/ucp-vancouver-node1-ipaddr)
        export DTR_IPADDR=$(cat /vagrant/dtr-vancouver-node1-ipaddr)
