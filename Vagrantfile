@@ -89,7 +89,7 @@ Vagrant.configure(2) do |config|
         curl -k https://${UCP_IPADDR}/ca > ucp-ca.pem
         docker run --rm docker/dtr:2.2.0-beta1 install --hub-username ${HUB_USERNAME} --hub-password ${HUB_PASSWORD} --ucp-url https://$UCP_IPADDR --ucp-node dtr-vancouver-node1 --replica-id $DTR_REPLICA_ID --dtr-external-url $DTR_IPADDR --ucp-username admin --ucp-password ${UCP_PASSWORD} --ucp-ca "$(cat ucp-ca.pem)"
         # Run backup of DTR
-        docker run --rm docker/dtr:2.2.0-beta1 --ucp-url https://$UCP_IPADDR --existing-replica-id ${DTR_REPLICA_ID} --ucp-username admin --ucp-password ${UCP_PASSWORD} --ucp-ca "$(cat ucp-ca.pem)" > /tmp/backup.tar
+        docker run --rm docker/dtr:2.2.0-beta1 backup --ucp-url https://${UCP_IPADDR} --existing-replica-id ${DTR_REPLICA_ID} --ucp-username admin --ucp-password ${UCP_PASSWORD} --ucp-ca "$(cat ucp-ca.pem)" > /tmp/backup.tar
         # Trust self-signed DTR CA
         openssl s_client -connect ${DTR_IPADDR}:443 -showcerts </dev/null 2>/dev/null | openssl x509 -outform PEM | sudo tee /usr/local/share/ca-certificates/${DTR_IPADDR}.crt
         sudo update-ca-certificates
