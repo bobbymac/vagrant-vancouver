@@ -119,7 +119,45 @@ Vagrant.configure(2) do |config|
        export HUB_USERNAME=$(cat /vagrant/hub_username)
        export HUB_PASSWORD=$(cat /vagrant/hub_password)
        docker login -u ${HUB_USERNAME} -p ${HUB_PASSWORD}
-       docker pull docker/ucp:2.1.0-beta1
+       docker pull docker/ucp:2.1.0-beta2
+       # Join Swarm as worker
+       export UCP_IPADDR=$(cat /vagrant/ucp-vancouver-node1-ipaddr)
+       export DTR_IPADDR=$(cat /vagrant/dtr-vancouver-node1-ipaddr)
+       export SWARM_JOIN_TOKEN_WORKER=$(cat /vagrant/swarm-join-token-worker)
+       docker swarm join --token ${SWARM_JOIN_TOKEN_WORKER} ${UCP_IPADDR}:2377
+       # Trust self-signed DTR CA
+       openssl s_client -connect ${DTR_IPADDR}:443 -showcerts </dev/null 2>/dev/null | openssl x509 -outform PEM | sudo tee /usr/local/share/ca-certificates/${DTR_IPADDR}.crt
+       sudo update-ca-certificates
+       sudo service docker restart
+       # Install Compose
+       curl -L https://github.com/docker/compose/releases/download/1.10.0-rc2/docker-compose-`uname -s`-`uname -m` > /usr/local/bin/docker-compose
+       chmod +x /usr/local/bin/docker-compose
+     SHELL
+    end
+
+    # Application Worker Node
+    config.vm.define "worker-node2" do |worker_node2|
+      worker_node2.vm.box = "ubuntu/xenial64"
+      worker_node2.vm.network "private_network", type: "dhcp"
+      worker_node2.vm.hostname = "worker-node2"
+      config.vm.provider :virtualbox do |vb|
+         vb.customize ["modifyvm", :id, "--memory", "2048"]
+         vb.customize ["modifyvm", :id, "--cpus", "2"]
+         vb.name = "worker-node2"
+      end
+      worker_node2.vm.provision "shell", inline: <<-SHELL
+       sudo apt-get update
+       sudo apt-get install -y apt-transport-https ca-certificates
+       sudo curl -fsSL https://packages.docker.com/1.13/install.sh | repo=testing sh
+       sudo usermod -aG docker ubuntu
+       # Load UCP images to allow ucp-agent to run
+       # sudo cp /vagrant/ucp_images_2.1.0-tp2.tar.gz .
+       # docker load < ucp_images_2.1.0-tp2.tar.gz
+       ifconfig enp0s8 | grep 'inet addr:' | cut -d: -f2 | awk '{ print $1}' > /vagrant/worker-node1-ipaddr
+       export HUB_USERNAME=$(cat /vagrant/hub_username)
+       export HUB_PASSWORD=$(cat /vagrant/hub_password)
+       docker login -u ${HUB_USERNAME} -p ${HUB_PASSWORD}
+       docker pull docker/ucp:2.1.0-beta2
        # Join Swarm as worker
        export UCP_IPADDR=$(cat /vagrant/ucp-vancouver-node1-ipaddr)
        export DTR_IPADDR=$(cat /vagrant/dtr-vancouver-node1-ipaddr)
