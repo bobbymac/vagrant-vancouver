@@ -17,5 +17,5 @@ ucp-bundle-admin
 *.pem
 *.pub
 *.cmd
-*.sh
+env.sh
 *.ps1
