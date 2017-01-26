@@ -97,7 +97,7 @@ Vagrant.configure(2) do |config|
       SHELL
     end
 
-    # Application Worker Node
+    # Application Worker Node 1
     config.vm.define "worker-node1" do |worker_node1|
       worker_node1.vm.box = "ubuntu/xenial64"
       worker_node1.vm.network "private_network", type: "dhcp"
@@ -130,12 +130,12 @@ Vagrant.configure(2) do |config|
        sudo update-ca-certificates
        sudo service docker restart
        # Install Compose
-       curl -L https://github.com/docker/compose/releases/download/1.10.0-rc2/docker-compose-`uname -s`-`uname -m` > /usr/local/bin/docker-compose
+       curl -L https://github.com/docker/compose/releases/download/1.10.0/docker-compose-`uname -s`-`uname -m` > /usr/local/bin/docker-compose
        chmod +x /usr/local/bin/docker-compose
      SHELL
     end
 
-    # Application Worker Node
+    # Application Worker Node 2
     config.vm.define "worker-node2" do |worker_node2|
       worker_node2.vm.box = "ubuntu/xenial64"
       worker_node2.vm.network "private_network", type: "dhcp"
@@ -168,7 +168,7 @@ Vagrant.configure(2) do |config|
        sudo update-ca-certificates
        sudo service docker restart
        # Install Compose
-       curl -L https://github.com/docker/compose/releases/download/1.10.0-rc2/docker-compose-`uname -s`-`uname -m` > /usr/local/bin/docker-compose
+       curl -L https://github.com/docker/compose/releases/download/1.10.0/docker-compose-`uname -s`-`uname -m` > /usr/local/bin/docker-compose
        chmod +x /usr/local/bin/docker-compose
      SHELL
     end
