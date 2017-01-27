@@ -37,7 +37,7 @@ Vagrant.configure(2) do |config|
        export HUB_PASSWORD=$(cat /vagrant/hub_password)
        docker login -u ${HUB_USERNAME} -p ${HUB_PASSWORD}
        docker pull docker/ucp:2.1.0-beta2
-       docker run --rm --name ucp -v /var/run/docker.sock:/var/run/docker.sock -v /vagrant/docker_subscription_nautilus.lic:/docker_subscription.lic docker/ucp:2.1.0-beta2 install --host-address ${UCP_IPADDR} --admin-password ${UCP_PASSWORD}
+       docker run --rm --name ucp -v /var/run/docker.sock:/var/run/docker.sock -v /vagrant/nautilus_beta.lic:/docker_subscription.lic docker/ucp:2.1.0-beta2 install --host-address ${UCP_IPADDR} --admin-password ${UCP_PASSWORD}
        docker swarm join-token manager | awk -F " " '/token/ {print $2}' > /vagrant/swarm-join-token-mgr
        docker swarm join-token worker | awk -F " " '/token/ {print $2}' > /vagrant/swarm-join-token-worker
        # Install registry certificates on client Docker daemon (only required for self-signed certs)
@@ -162,6 +162,7 @@ Vagrant.configure(2) do |config|
        export UCP_IPADDR=$(cat /vagrant/ucp-vancouver-node1-ipaddr)
        export DTR_IPADDR=$(cat /vagrant/dtr-vancouver-node1-ipaddr)
        export SWARM_JOIN_TOKEN_WORKER=$(cat /vagrant/swarm-join-token-worker)
+       export WORKER_NODE_NAME=$(hostname)
        docker swarm join --token ${SWARM_JOIN_TOKEN_WORKER} ${UCP_IPADDR}:2377
        # Trust self-signed DTR CA
        openssl s_client -connect ${DTR_IPADDR}:443 -showcerts </dev/null 2>/dev/null | openssl x509 -outform PEM | sudo tee /usr/local/share/ca-certificates/${DTR_IPADDR}.crt
@@ -170,6 +171,8 @@ Vagrant.configure(2) do |config|
        # Install Compose
        curl -L https://github.com/docker/compose/releases/download/1.10.0/docker-compose-`uname -s`-`uname -m` > /usr/local/bin/docker-compose
        chmod +x /usr/local/bin/docker-compose
+       sudo mkdir /home/ubuntu/jenkins
+       docker node update --label-add type=jenkins ${WORKER_NODE_NAME}
      SHELL
     end
 
