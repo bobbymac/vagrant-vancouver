@@ -171,6 +171,10 @@ Vagrant.configure(2) do |config|
        # Install Compose
        curl -L https://github.com/docker/compose/releases/download/1.10.0/docker-compose-`uname -s`-`uname -m` > /usr/local/bin/docker-compose
        chmod +x /usr/local/bin/docker-compose
+       # Install Notary
+       curl -L https://github.com/docker/notary/releases/download/v0.4.3/notary-Linux-amd64 > /usr/local/bin/notary
+       chmod +x /usr/local/bin/notary
+       # Configure node for Jenkins deployment
        sudo mkdir /home/ubuntu/jenkins
        docker node update --label-add type=jenkins ${WORKER_NODE_NAME}
      SHELL
