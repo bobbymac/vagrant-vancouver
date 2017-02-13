@@ -164,7 +164,6 @@ Vagrant.configure(2) do |config|
        chmod +x /usr/local/bin/notary
        # Configure node for Jenkins deployment
        sudo mkdir /home/ubuntu/jenkins
-       docker node update --label-add type=jenkins ${WORKER_NODE_NAME}
      SHELL
     end
 
