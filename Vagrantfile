@@ -18,7 +18,7 @@ Vagrant.configure(2) do |config|
       ucp_vancouver_node1.vm.network "private_network", type: "dhcp"
       ucp_vancouver_node1.vm.hostname = "ucp-vancouver-node1"
       config.vm.provider :virtualbox do |vb|
-         vb.customize ["modifyvm", :id, "--memory", "3072"]
+         vb.customize ["modifyvm", :id, "--memory", "2048"]
          vb.customize ["modifyvm", :id, "--cpus", "2"]
          vb.name = "ucp-vancouver-node1"
       end
@@ -54,7 +54,7 @@ Vagrant.configure(2) do |config|
       dtr_vancouver_node1.vm.network "private_network", type: "dhcp"
       dtr_vancouver_node1.vm.hostname = "dtr-vancouver-node1"
       config.vm.provider :virtualbox do |vb|
-         vb.customize ["modifyvm", :id, "--memory", "3072"]
+         vb.customize ["modifyvm", :id, "--memory", "2048"]
          vb.customize ["modifyvm", :id, "--cpus", "2"]
          vb.name = "dtr-vancouver-node1"
       end
