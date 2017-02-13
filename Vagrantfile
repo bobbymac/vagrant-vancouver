@@ -37,11 +37,6 @@ Vagrant.configure(2) do |config|
        docker run --rm --name ucp -v /var/run/docker.sock:/var/run/docker.sock -v /vagrant/docker_subscription.lic:/docker_subscription.lic docker/ucp:2.1.0 install --host-address ${UCP_IPADDR} --admin-password ${UCP_PASSWORD}
        docker swarm join-token manager | awk -F " " '/token/ {print $2}' > /vagrant/swarm-join-token-mgr
        docker swarm join-token worker | awk -F " " '/token/ {print $2}' > /vagrant/swarm-join-token-worker
-       # Install registry certificates on client Docker daemon (only required for self-signed certs)
-       # export DTR_IPADDR=$(cat /vagrant/dtr-vancouver-node1-ipaddr)
-       # openssl s_client -connect ${DTR_IPADDR}:443 -showcerts </dev/null 2>/dev/null | openssl x509 -outform PEM | sudo tee /usr/local/share/ca-certificates/${DTR_IPADDR}.crt
-       # sudo update-ca-certificates
-       # sudo service docker restart
        docker run --rm --name ucp -v /var/run/docker.sock:/var/run/docker.sock docker/ucp:2.1.0 id | awk '{ print $1}' > /vagrant/ucp-vancouver-id
        export UCP_ID=$(cat /vagrant/ucp-vancouver-id)
        docker run --rm -i --name ucp -v /var/run/docker.sock:/var/run/docker.sock docker/ucp:2.1.0 backup --id ${UCP_ID} --root-ca-only --passphrase "secret" > /vagrant/backup.tar
