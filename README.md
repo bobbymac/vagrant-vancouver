@@ -1,4 +1,4 @@
-Vagrant Virtualbox setup for UCP 2.1 and DTR 2.2
+Vagrant Virtualbox setup for UCP 2.1.0 and DTR 2.2.1
 ========================
 
 ## Download vagrant from Vagrant website
