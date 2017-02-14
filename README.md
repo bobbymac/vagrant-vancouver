@@ -32,6 +32,7 @@ Add hosts for DTR, UCP, and Jenkins
 172.28.128.3 dtr.local
 ```
 
+Persist changes on macOS 
 ```
 sudo killall -HUP mDNSResponder
 ```
