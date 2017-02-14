@@ -69,6 +69,7 @@ Vagrant.configure(2) do |config|
         cat /dev/urandom | tr -dc 'a-f0-9' | fold -w 12 | head -n 1 > /vagrant/dtr-replica-id
         export UCP_PASSWORD=$(cat /vagrant/ucp_password)
         export UCP_IPADDR=$(cat /vagrant/ucp-vancouver-node1-ipaddr)
+        export DTR_URL=https://dtr.local
         export DTR_IPADDR=$(cat /vagrant/dtr-vancouver-node1-ipaddr)
         export SWARM_JOIN_TOKEN_WORKER=$(cat /vagrant/swarm-join-token-worker)
         export DTR_REPLICA_ID=$(cat /vagrant/dtr-replica-id)
@@ -78,7 +79,7 @@ Vagrant.configure(2) do |config|
         sleep 30
         # Install DTR
         curl -k https://${UCP_IPADDR}/ca > ucp-ca.pem
-        docker run --rm docker/dtr:2.2.1 install --hub-username ${HUB_USERNAME} --hub-password ${HUB_PASSWORD} --ucp-url https://$UCP_IPADDR --ucp-node dtr-vancouver-node1 --replica-id $DTR_REPLICA_ID --dtr-external-url $DTR_IPADDR --ucp-username admin --ucp-password ${UCP_PASSWORD} --ucp-ca "$(cat ucp-ca.pem)"
+        docker run --rm docker/dtr:2.2.1 install --hub-username ${HUB_USERNAME} --hub-password ${HUB_PASSWORD} --ucp-url https://$UCP_IPADDR --ucp-node dtr-vancouver-node1 --replica-id $DTR_REPLICA_ID --dtr-external-url $DTR_URL --ucp-username admin --ucp-password ${UCP_PASSWORD} --ucp-ca "$(cat ucp-ca.pem)"
         # Run backup of DTR
         docker run --rm docker/dtr:2.2.1 backup --ucp-url https://${UCP_IPADDR} --existing-replica-id ${DTR_REPLICA_ID} --ucp-username admin --ucp-password ${UCP_PASSWORD} --ucp-ca "$(cat ucp-ca.pem)" > /tmp/backup.tar
         # Trust self-signed DTR CA
