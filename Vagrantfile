@@ -24,7 +24,8 @@ Vagrant.configure(2) do |config|
       end
       ucp_vancouver_node1.vm.provision "shell", inline: <<-SHELL
        sudo apt-get update
-       sudo apt-get install -y apt-transport-https ca-certificates
+       sudo apt-get install -y apt-transport-https ca-certificates ntpdate
+       sudo ntpdate -s time.nist.gov
        sudo curl -fsSL https://packages.docker.com/1.13/install.sh | sh
        sudo usermod -aG docker ubuntu
        ifconfig enp0s8 | grep 'inet addr:' | cut -d: -f2 | awk '{ print $1}' > /vagrant/ucp-vancouver-node1-ipaddr
@@ -55,7 +56,8 @@ Vagrant.configure(2) do |config|
       end
       dtr_vancouver_node1.vm.provision "shell", inline: <<-SHELL
         sudo apt-get update
-        sudo apt-get install -y apt-transport-https ca-certificates
+        sudo apt-get install -y apt-transport-https ca-certificates ntpdate
+        sudo ntpdate -s time.nist.gov
         sudo curl -fsSL https://packages.docker.com/1.13/install.sh | sh
         sudo usermod -aG docker ubuntu
         # Login to Hub
@@ -98,7 +100,8 @@ Vagrant.configure(2) do |config|
       end
       worker_node1.vm.provision "shell", inline: <<-SHELL
        sudo apt-get update
-       sudo apt-get install -y apt-transport-https ca-certificates
+       sudo apt-get install -y apt-transport-https ca-certificates ntpdate
+       sudo ntpdate -s time.nist.gov
        sudo curl -fsSL https://packages.docker.com/1.13/install.sh | sh
        sudo usermod -aG docker ubuntu
        ifconfig enp0s8 | grep 'inet addr:' | cut -d: -f2 | awk '{ print $1}' > /vagrant/worker-node1-ipaddr
@@ -133,7 +136,8 @@ Vagrant.configure(2) do |config|
       end
       worker_node2.vm.provision "shell", inline: <<-SHELL
        sudo apt-get update
-       sudo apt-get install -y apt-transport-https ca-certificates
+       sudo apt-get install -y apt-transport-https ca-certificates ntpdate
+       sudo ntpdate -s time.nist.gov
        sudo curl -fsSL https://packages.docker.com/1.13/install.sh | sh
        sudo usermod -aG docker ubuntu
        ifconfig enp0s8 | grep 'inet addr:' | cut -d: -f2 | awk '{ print $1}' > /vagrant/worker-node1-ipaddr

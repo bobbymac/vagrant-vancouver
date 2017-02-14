@@ -13,6 +13,11 @@ https://www.vagrantup.com/downloads.html
 https://www.virtualbox.org/wiki/Downloads
 ```
 
+## Download Xenial box
+```
+vagrant init ubuntu/xenial64
+```
+
 ## Bring up/Resume UCP, DTR, and Jenkins nodes
 
 ```
