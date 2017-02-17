@@ -19,3 +19,4 @@ ucp-bundle-admin
 *.cmd
 env.sh
 *.ps1
+.DS_Store

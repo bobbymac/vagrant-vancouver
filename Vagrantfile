@@ -16,7 +16,7 @@ Vagrant.configure(2) do |config|
     config.vm.define "ucp-vancouver-node1" do |ucp_vancouver_node1|
       ucp_vancouver_node1.vm.box = "ubuntu/xenial64"
       ucp_vancouver_node1.vm.network "private_network", ip: "172.28.128.10"
-      ucp_vancouver_node1.vm.hostname = "ucp-vancouver-node1"
+      ucp_vancouver_node1.vm.hostname = "ucp.local"
       config.vm.provider :virtualbox do |vb|
          vb.customize ["modifyvm", :id, "--memory", "2048"]
          vb.customize ["modifyvm", :id, "--cpus", "2"]
@@ -38,7 +38,7 @@ Vagrant.configure(2) do |config|
        sudo sh -c "echo '172.28.128.11 dtr.local' >> /etc/hosts"
        docker login -u ${HUB_USERNAME} -p ${HUB_PASSWORD}
        docker pull docker/ucp:2.1.0
-       docker run --rm --name ucp -v /var/run/docker.sock:/var/run/docker.sock -v /vagrant/docker_subscription.lic:/docker_subscription.lic docker/ucp:2.1.0 install --host-address ${UCP_IPADDR} --admin-password ${UCP_PASSWORD}
+       docker run --rm --name ucp -v /var/run/docker.sock:/var/run/docker.sock -v /vagrant/docker_subscription.lic:/docker_subscription.lic docker/ucp:2.1.0 install --host-address ${UCP_IPADDR} --admin-password ${UCP_PASSWORD} --san ucp.local
        docker swarm join-token manager | awk -F " " '/token/ {print $2}' > /vagrant/swarm-join-token-mgr
        docker swarm join-token worker | awk -F " " '/token/ {print $2}' > /vagrant/swarm-join-token-worker
        docker run --rm --name ucp -v /var/run/docker.sock:/var/run/docker.sock docker/ucp:2.1.0 id | awk '{ print $1}' > /vagrant/ucp-vancouver-id
@@ -51,7 +51,7 @@ Vagrant.configure(2) do |config|
     config.vm.define "dtr-vancouver-node1" do |dtr_vancouver_node1|
       dtr_vancouver_node1.vm.box = "ubuntu/xenial64"
       dtr_vancouver_node1.vm.network "private_network", ip: "172.28.128.11"
-      dtr_vancouver_node1.vm.hostname = "dtr-vancouver-node1"
+      dtr_vancouver_node1.vm.hostname = "dtr.local"
       config.vm.provider :virtualbox do |vb|
          vb.customize ["modifyvm", :id, "--memory", "2048"]
          vb.customize ["modifyvm", :id, "--cpus", "2"]

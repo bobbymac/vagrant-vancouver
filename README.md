@@ -1,12 +1,12 @@
-Vagrant Virtualbox setup for UCP 2.1.0 and DTR 2.2.1
+Vagrant Virtualbox setup for CS Engine 1.13.1-cs1, UCP 2.1.0 and DTR 2.2.1
 ========================
 
-The following set of instructions helps Docker DataCenter across multiple vms:
+The following set of instructions helps Docker DataCenter across multiple vms with static ip addresses:
 
-* UCP - ucp-vancouver-node1 on domain ucp.local
-* DTR - dtr-vancouver-node1 on domain dtr.local
-* Worker node - worker-node1
-* Worker node - worker-node2
+* UCP - ucp.local on 172.28.128.10
+* DTR - dtr.local on 172.28.128.11
+* Worker node - worker-node1 on 172.28.128.12
+* Worker node - worker-node2 on 172.28.128.13
 
 ## Download vagrant from Vagrant website
 
@@ -29,26 +29,6 @@ vagrant init ubuntu/xenial64
 ```
 vagrant plugin install vagrant-hostsupdater
 vagrant plugin install vagrant-multiprovider-snap
-```
-
-## Setup /etc/hosts  
-Edit /etc/hosts on macOS for the host machine running VMs
-```
-sudo vi /private/etc/hosts
-```
-
-Add hosts for DTR, UCP, and Jenkins
-```
-#/etc/hosts
-172.28.128.3 wordpress.local
-172.28.128.3 jenkins.local
-172.28.128.3 ucp.local
-172.28.128.3 dtr.local
-```
-
-Persist changes on macOS
-```
-sudo killall -HUP mDNSResponder
 ```
 
 ## Bring up/Resume UCP, DTR, and Jenkins nodes
