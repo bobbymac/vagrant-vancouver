@@ -1,6 +1,13 @@
 Vagrant Virtualbox setup for UCP 2.1.0 and DTR 2.2.1
 ========================
 
+The following set of instructions helps Docker DataCenter across multiple vms:
+
+* UCP - ucp-vancouver-node1 on domain ucp.local
+* DTR - dtr-vancouver-node1 on domain dtr.local
+* Worker node - worker-node1
+* Worker node - worker-node2
+
 ## Download vagrant from Vagrant website
 
 ```
@@ -25,6 +32,7 @@ vagrant plugin install vagrant-multiprovider-snap
 ```
 
 ## Setup /etc/hosts  
+Edit /etc/hosts on macOS for the host machine running VMs
 ```
 sudo vi /private/etc/hosts
 ```

@@ -15,7 +15,7 @@ Vagrant.configure(2) do |config|
   # UCP 2.1 node for DDC
     config.vm.define "ucp-vancouver-node1" do |ucp_vancouver_node1|
       ucp_vancouver_node1.vm.box = "ubuntu/xenial64"
-      ucp_vancouver_node1.vm.network "private_network", type: "dhcp"
+      ucp_vancouver_node1.vm.network "private_network", ip: "172.28.128.10"
       ucp_vancouver_node1.vm.hostname = "ucp-vancouver-node1"
       config.vm.provider :virtualbox do |vb|
          vb.customize ["modifyvm", :id, "--memory", "2048"]
@@ -35,6 +35,7 @@ Vagrant.configure(2) do |config|
        export HUB_USERNAME=$(cat /vagrant/hub_username)
        export HUB_PASSWORD=$(cat /vagrant/hub_password)
        sudo sh -c "echo '${UCP_IPADDR} ucp.local' >> /etc/hosts"
+       sudo sh -c "echo '172.28.128.11 dtr.local' >> /etc/hosts"
        docker login -u ${HUB_USERNAME} -p ${HUB_PASSWORD}
        docker pull docker/ucp:2.1.0
        docker run --rm --name ucp -v /var/run/docker.sock:/var/run/docker.sock -v /vagrant/docker_subscription.lic:/docker_subscription.lic docker/ucp:2.1.0 install --host-address ${UCP_IPADDR} --admin-password ${UCP_PASSWORD}
@@ -49,7 +50,7 @@ Vagrant.configure(2) do |config|
     # DTR Node 1 for DDC setup
     config.vm.define "dtr-vancouver-node1" do |dtr_vancouver_node1|
       dtr_vancouver_node1.vm.box = "ubuntu/xenial64"
-      dtr_vancouver_node1.vm.network "private_network", type: "dhcp"
+      dtr_vancouver_node1.vm.network "private_network", ip: "172.28.128.11"
       dtr_vancouver_node1.vm.hostname = "dtr-vancouver-node1"
       config.vm.provider :virtualbox do |vb|
          vb.customize ["modifyvm", :id, "--memory", "2048"]
@@ -72,6 +73,7 @@ Vagrant.configure(2) do |config|
         cat /dev/urandom | tr -dc 'a-f0-9' | fold -w 12 | head -n 1 > /vagrant/dtr-replica-id
         export UCP_PASSWORD=$(cat /vagrant/ucp_password)
         export UCP_IPADDR=$(cat /vagrant/ucp-vancouver-node1-ipaddr)
+        export UCP_URL=https://ucp.local
         export DTR_URL=https://dtr.local
         export DTR_IPADDR=$(cat /vagrant/dtr-vancouver-node1-ipaddr)
         export SWARM_JOIN_TOKEN_WORKER=$(cat /vagrant/swarm-join-token-worker)
@@ -83,10 +85,10 @@ Vagrant.configure(2) do |config|
         # Wait for Join to complete
         sleep 30
         # Install DTR
-        curl -k https://${UCP_IPADDR}/ca > ucp-ca.pem
-        docker run --rm docker/dtr:2.2.1 install --hub-username ${HUB_USERNAME} --hub-password ${HUB_PASSWORD} --ucp-url https://$UCP_IPADDR --ucp-node dtr-vancouver-node1 --replica-id $DTR_REPLICA_ID --dtr-external-url $DTR_URL --ucp-username admin --ucp-password ${UCP_PASSWORD} --ucp-ca "$(cat ucp-ca.pem)"
+        curl -k ${UCP_URL}/ca > ucp-ca.pem
+        docker run --rm docker/dtr:2.2.1 install --hub-username ${HUB_USERNAME} --hub-password ${HUB_PASSWORD} --ucp-url ${UCP_URL} --ucp-node dtr-vancouver-node1 --replica-id ${DTR_REPLICA_ID} --dtr-external-url ${DTR_URL} --ucp-username admin --ucp-password ${UCP_PASSWORD} --ucp-ca "$(cat ucp-ca.pem)"
         # Run backup of DTR
-        docker run --rm docker/dtr:2.2.1 backup --ucp-url https://${UCP_IPADDR} --existing-replica-id ${DTR_REPLICA_ID} --ucp-username admin --ucp-password ${UCP_PASSWORD} --ucp-ca "$(cat ucp-ca.pem)" > /tmp/backup.tar
+        docker run --rm docker/dtr:2.2.1 backup --ucp-url ${UCP_URL} --existing-replica-id ${DTR_REPLICA_ID} --ucp-username admin --ucp-password ${UCP_PASSWORD} --ucp-ca "$(cat ucp-ca.pem)" > /tmp/backup.tar
         # Trust self-signed DTR CA
         openssl s_client -connect ${DTR_IPADDR}:443 -showcerts </dev/null 2>/dev/null | openssl x509 -outform PEM | sudo tee /usr/local/share/ca-certificates/${DTR_IPADDR}.crt
         sudo update-ca-certificates
@@ -97,7 +99,7 @@ Vagrant.configure(2) do |config|
     # Application Worker Node 1
     config.vm.define "worker-node1" do |worker_node1|
       worker_node1.vm.box = "ubuntu/xenial64"
-      worker_node1.vm.network "private_network", type: "dhcp"
+      worker_node1.vm.network "private_network", ip: "172.28.128.12"
       worker_node1.vm.hostname = "worker-node1"
       config.vm.provider :virtualbox do |vb|
          vb.customize ["modifyvm", :id, "--memory", "2048"]
@@ -134,7 +136,7 @@ Vagrant.configure(2) do |config|
     # Application Worker Node 2
     config.vm.define "worker-node2" do |worker_node2|
       worker_node2.vm.box = "ubuntu/xenial64"
-      worker_node2.vm.network "private_network", type: "dhcp"
+      worker_node2.vm.network "private_network", ip: "172.28.128.13"
       worker_node2.vm.hostname = "worker-node2"
       config.vm.provider :virtualbox do |vb|
          vb.customize ["modifyvm", :id, "--memory", "2048"]
