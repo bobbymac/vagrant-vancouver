@@ -58,5 +58,5 @@ vagrant halt ucp-vancouver-node1 dtr-vancouver-node1 worker-node1 worker-node2
 ## Destroy UCP, DTR, and Jenkins nodes
 
 ```
-vagrant destroy ucp-vancouver-node1 dtr-vancouver-node1 worker-node1
+vagrant destroy ucp-vancouver-node1 dtr-vancouver-node1 worker-node1 worker-node2
 ```
