@@ -18,6 +18,12 @@ https://www.virtualbox.org/wiki/Downloads
 vagrant init ubuntu/xenial64
 ```
 
+## Install Vagrant Plugins
+```
+vagrant plugin install vagrant-hostsupdater
+vagrant plugin install vagrant-multiprovider-snap
+```
+
 ## Setup /etc/hosts  
 ```
 sudo vi /private/etc/hosts
@@ -32,7 +38,7 @@ Add hosts for DTR, UCP, and Jenkins
 172.28.128.3 dtr.local
 ```
 
-Persist changes on macOS 
+Persist changes on macOS
 ```
 sudo killall -HUP mDNSResponder
 ```
@@ -40,13 +46,13 @@ sudo killall -HUP mDNSResponder
 ## Bring up/Resume UCP, DTR, and Jenkins nodes
 
 ```
-vagrant up ucp-vancouver-node1 dtr-vancouver-node1 worker-node1
+vagrant up ucp-vancouver-node1 dtr-vancouver-node1 worker-node1 worker-node2
 ```
 
 ## Stop UCP, DTR, and Jenkins nodes
 
 ```
-vagrant halt ucp-vancouver-node1 dtr-vancouver-node1 worker-node1
+vagrant halt ucp-vancouver-node1 dtr-vancouver-node1 worker-node1 worker-node2
 ```
 
 ## Destroy UCP, DTR, and Jenkins nodes
