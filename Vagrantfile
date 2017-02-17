@@ -20,6 +20,7 @@ Vagrant.configure(2) do |config|
       config.vm.provider :virtualbox do |vb|
          vb.customize ["modifyvm", :id, "--memory", "2048"]
          vb.customize ["modifyvm", :id, "--cpus", "2"]
+         vb.customize ["modifyvm", :id, "--natdnshostresolver1", "on"]
          vb.name = "ucp-vancouver-node1"
       end
       ucp_vancouver_node1.vm.provision "shell", inline: <<-SHELL
@@ -33,6 +34,7 @@ Vagrant.configure(2) do |config|
        export UCP_PASSWORD=$(cat /vagrant/ucp_password)
        export HUB_USERNAME=$(cat /vagrant/hub_username)
        export HUB_PASSWORD=$(cat /vagrant/hub_password)
+       sudo sh -c "echo '${UCP_IPADDR} ucp.local' >> /etc/hosts"
        docker login -u ${HUB_USERNAME} -p ${HUB_PASSWORD}
        docker pull docker/ucp:2.1.0
        docker run --rm --name ucp -v /var/run/docker.sock:/var/run/docker.sock -v /vagrant/docker_subscription.lic:/docker_subscription.lic docker/ucp:2.1.0 install --host-address ${UCP_IPADDR} --admin-password ${UCP_PASSWORD}
@@ -52,6 +54,7 @@ Vagrant.configure(2) do |config|
       config.vm.provider :virtualbox do |vb|
          vb.customize ["modifyvm", :id, "--memory", "2048"]
          vb.customize ["modifyvm", :id, "--cpus", "2"]
+         vb.customize ["modifyvm", :id, "--natdnshostresolver1", "on"]
          vb.name = "dtr-vancouver-node1"
       end
       dtr_vancouver_node1.vm.provision "shell", inline: <<-SHELL
@@ -61,11 +64,11 @@ Vagrant.configure(2) do |config|
         sudo curl -fsSL https://packages.docker.com/1.13/install.sh | sh
         sudo usermod -aG docker ubuntu
         # Login to Hub
-        ifconfig enp0s8 | grep 'inet addr:' | cut -d: -f2 | awk '{ print $1}' > /vagrant/dtr-vancouver-node1-ipaddr
         export HUB_USERNAME=$(cat /vagrant/hub_username)
         export HUB_PASSWORD=$(cat /vagrant/hub_password)
         docker login -u ${HUB_USERNAME} -p ${HUB_PASSWORD}
         # Join UCP Swarm
+        ifconfig enp0s8 | grep 'inet addr:' | cut -d: -f2 | awk '{ print $1}' > /vagrant/dtr-vancouver-node1-ipaddr
         cat /dev/urandom | tr -dc 'a-f0-9' | fold -w 12 | head -n 1 > /vagrant/dtr-replica-id
         export UCP_PASSWORD=$(cat /vagrant/ucp_password)
         export UCP_IPADDR=$(cat /vagrant/ucp-vancouver-node1-ipaddr)
@@ -73,6 +76,8 @@ Vagrant.configure(2) do |config|
         export DTR_IPADDR=$(cat /vagrant/dtr-vancouver-node1-ipaddr)
         export SWARM_JOIN_TOKEN_WORKER=$(cat /vagrant/swarm-join-token-worker)
         export DTR_REPLICA_ID=$(cat /vagrant/dtr-replica-id)
+        sudo sh -c "echo '${UCP_IPADDR} ucp.local' >> /etc/hosts"
+        sudo sh -c "echo '${DTR_IPADDR} dtr.local' >> /etc/hosts"
         docker pull docker/ucp:2.1.0
         docker swarm join --token ${SWARM_JOIN_TOKEN_WORKER} ${UCP_IPADDR}:2377
         # Wait for Join to complete
@@ -97,6 +102,7 @@ Vagrant.configure(2) do |config|
       config.vm.provider :virtualbox do |vb|
          vb.customize ["modifyvm", :id, "--memory", "2048"]
          vb.customize ["modifyvm", :id, "--cpus", "2"]
+         vb.customize ["modifyvm", :id, "--natdnshostresolver1", "on"]
          vb.name = "worker-node1"
       end
       worker_node1.vm.provision "shell", inline: <<-SHELL
@@ -120,7 +126,7 @@ Vagrant.configure(2) do |config|
        sudo update-ca-certificates
        sudo service docker restart
        # Install Compose
-       curl -L https://github.com/docker/compose/releases/download/1.10.0/docker-compose-`uname -s`-`uname -m` > /usr/local/bin/docker-compose
+       curl -L https://github.com/docker/compose/releases/download/1.11.0/docker-compose-`uname -s`-`uname -m` > /usr/local/bin/docker-compose
        chmod +x /usr/local/bin/docker-compose
      SHELL
     end
@@ -133,6 +139,7 @@ Vagrant.configure(2) do |config|
       config.vm.provider :virtualbox do |vb|
          vb.customize ["modifyvm", :id, "--memory", "2048"]
          vb.customize ["modifyvm", :id, "--cpus", "2"]
+         vb.customize ["modifyvm", :id, "--natdnshostresolver1", "on"]
          vb.name = "worker-node2"
       end
       worker_node2.vm.provision "shell", inline: <<-SHELL
