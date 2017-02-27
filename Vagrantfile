@@ -170,7 +170,7 @@ Vagrant.configure(2) do |config|
        # Create jenkins folder to store Jenkins container config
        sudo mkdir /home/ubuntu/jenkins
        # Create notary foldoer to store trust config
-       sudo mkdir /home/ubuntu/notary
+       sudo mkdir -p /home/ubuntu/notary-config/.docker/trust 
      SHELL
     end
 
