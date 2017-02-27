@@ -94,7 +94,7 @@ Vagrant.configure(2) do |config|
         sudo update-ca-certificates
         sudo service docker restart
         # Copy convenience scripts
-        sudo cp -r /vagrant/scripts .
+        sudo cp -r /vagrant/scripts /home/ubuntu/scripts
       SHELL
     end
 
