@@ -129,9 +129,6 @@ Vagrant.configure(2) do |config|
        openssl s_client -connect ${DTR_IPADDR}:443 -showcerts </dev/null 2>/dev/null | openssl x509 -outform PEM | sudo tee /usr/local/share/ca-certificates/${DTR_IPADDR}.crt
        sudo update-ca-certificates
        sudo service docker restart
-       # Install Compose
-       curl -L https://github.com/docker/compose/releases/download/1.11.0/docker-compose-`uname -s`-`uname -m` > /usr/local/bin/docker-compose
-       chmod +x /usr/local/bin/docker-compose
      SHELL
     end
 
@@ -167,14 +164,13 @@ Vagrant.configure(2) do |config|
        openssl s_client -connect ${DTR_IPADDR}:443 -showcerts </dev/null 2>/dev/null | openssl x509 -outform PEM | sudo tee /usr/local/share/ca-certificates/${DTR_IPADDR}.crt
        sudo update-ca-certificates
        sudo service docker restart
-       # Install Compose
-       curl -L https://github.com/docker/compose/releases/download/1.11.1/docker-compose-`uname -s`-`uname -m` > /usr/local/bin/docker-compose
-       chmod +x /usr/local/bin/docker-compose
        # Install Notary
        curl -L https://github.com/docker/notary/releases/download/v0.4.3/notary-Linux-amd64 > /home/ubuntu/notary
        chmod +x /home/ubuntu/notary
-       # Configure node for Jenkins deployment
+       # Create jenkins folder to store Jenkins container config
        sudo mkdir /home/ubuntu/jenkins
+       # Create notary foldoer to store trust config
+       sudo mkdir /home/ubuntu/notary
      SHELL
     end
 
