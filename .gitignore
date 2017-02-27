@@ -14,6 +14,7 @@ swarm-join-token-worker
 .vagrant
 jenkins
 ucp-bundle-admin
+ucp-bundle-david
 *.pem
 *.pub
 *.cmd
