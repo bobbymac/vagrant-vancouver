@@ -1,4 +1,4 @@
-Vagrant Virtualbox setup for CS Engine 1.13.1-cs1, UCP 2.1.0 and DTR 2.2.1
+Vagrant Virtualbox setup for CS Engine 1.13.1-cs2, UCP 2.1.0 and DTR 2.2.2
 ========================
 
 The following set of instructions helps Docker DataCenter across multiple vms with static ip addresses:
