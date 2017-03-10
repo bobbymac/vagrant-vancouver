@@ -86,9 +86,9 @@ Vagrant.configure(2) do |config|
         sleep 30
         # Install DTR
         curl -k https://${UCP_IPADDR}/ca > ucp-ca.pem
-        docker run --rm docker/dtr:2.2.2 install --hub-username ${HUB_USERNAME} --hub-password ${HUB_PASSWORD} --ucp-url https://${UCP_IPADDR} --ucp-node dtr --replica-id ${DTR_REPLICA_ID} --dtr-external-url https://${DTR_IPADDR} --ucp-username admin --ucp-password ${UCP_PASSWORD} --ucp-ca "$(cat ucp-ca.pem)"
+        docker run --rm docker/dtr:2.2.3 install --hub-username ${HUB_USERNAME} --hub-password ${HUB_PASSWORD} --ucp-url https://${UCP_IPADDR} --ucp-node dtr --replica-id ${DTR_REPLICA_ID} --dtr-external-url https://${DTR_IPADDR} --ucp-username admin --ucp-password ${UCP_PASSWORD} --ucp-ca "$(cat ucp-ca.pem)"
         # Run backup of DTR
-        docker run --rm docker/dtr:2.2.2 backup --ucp-url https://${UCP_IPADDR} --existing-replica-id ${DTR_REPLICA_ID} --ucp-username admin --ucp-password ${UCP_PASSWORD} --ucp-ca "$(cat ucp-ca.pem)" > /tmp/backup.tar
+        docker run --rm docker/dtr:2.2.3 backup --ucp-url https://${UCP_IPADDR} --existing-replica-id ${DTR_REPLICA_ID} --ucp-username admin --ucp-password ${UCP_PASSWORD} --ucp-ca "$(cat ucp-ca.pem)" > /tmp/backup.tar
         # Trust self-signed DTR CA
         openssl s_client -connect ${DTR_IPADDR}:443 -showcerts </dev/null 2>/dev/null | openssl x509 -outform PEM | sudo tee /usr/local/share/ca-certificates/${DTR_IPADDR}.crt
         sudo update-ca-certificates
@@ -149,7 +149,7 @@ Vagrant.configure(2) do |config|
        sudo ntpdate -s time.nist.gov
        sudo curl -fsSL https://packages.docker.com/1.13/install.sh | sh
        sudo usermod -aG docker ubuntu
-       ifconfig enp0s8 | grep 'inet addr:' | cut -d: -f2 | awk '{ print $1}' > /vagrant/worker-node1-ipaddr
+       ifconfig enp0s8 | grep 'inet addr:' | cut -d: -f2 | awk '{ print $1}' > /vagrant/worker-node2-ipaddr
        export HUB_USERNAME=$(cat /vagrant/hub_username)
        export HUB_PASSWORD=$(cat /vagrant/hub_password)
        docker login -u ${HUB_USERNAME} -p ${HUB_PASSWORD}
@@ -171,6 +171,41 @@ Vagrant.configure(2) do |config|
        sudo mkdir /home/ubuntu/jenkins
        # Create notary foldoer to store trust config
        sudo mkdir -p /home/ubuntu/notary-config/.docker/trust
+     SHELL
+    end
+
+    # Application Worker Node 3
+    config.vm.define "worker-node3" do |worker_node3|
+      worker_node3.vm.box = "ubuntu/xenial64"
+      worker_node3.vm.network "private_network", ip: "172.28.128.13"
+      worker_node3.vm.hostname = "worker-node3"
+      config.vm.provider :virtualbox do |vb|
+         vb.customize ["modifyvm", :id, "--memory", "2048"]
+         vb.customize ["modifyvm", :id, "--cpus", "2"]
+         vb.customize ["modifyvm", :id, "--natdnshostresolver1", "on"]
+         vb.name = "worker-node3"
+      end
+      worker_node3.vm.provision "shell", inline: <<-SHELL
+       sudo apt-get update
+       sudo apt-get install -y apt-transport-https ca-certificates ntpdate
+       sudo ntpdate -s time.nist.gov
+       sudo curl -fsSL https://packages.docker.com/1.13/install.sh | sh
+       sudo usermod -aG docker ubuntu
+       ifconfig enp0s8 | grep 'inet addr:' | cut -d: -f2 | awk '{ print $1}' > /vagrant/worker-node3-ipaddr
+       export HUB_USERNAME=$(cat /vagrant/hub_username)
+       export HUB_PASSWORD=$(cat /vagrant/hub_password)
+       docker login -u ${HUB_USERNAME} -p ${HUB_PASSWORD}
+       docker pull docker/ucp:2.1.0
+       # Join Swarm as worker
+       export UCP_IPADDR=$(cat /vagrant/ucp-vancouver-node1-ipaddr)
+       export DTR_IPADDR=$(cat /vagrant/dtr-vancouver-node1-ipaddr)
+       export SWARM_JOIN_TOKEN_WORKER=$(cat /vagrant/swarm-join-token-worker)
+       export WORKER_NODE_NAME=$(hostname)
+       docker swarm join --token ${SWARM_JOIN_TOKEN_WORKER} ${UCP_IPADDR}:2377
+       # Trust self-signed DTR CA
+       openssl s_client -connect ${DTR_IPADDR}:443 -showcerts </dev/null 2>/dev/null | openssl x509 -outform PEM | sudo tee /usr/local/share/ca-certificates/${DTR_IPADDR}.crt
+       sudo update-ca-certificates
+       sudo service docker restart
      SHELL
     end
 
