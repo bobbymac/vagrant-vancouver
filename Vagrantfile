@@ -24,26 +24,29 @@ Vagrant.configure(2) do |config|
          vb.name = "ucp-vancouver-node1"
       end
       ucp_vancouver_node1.vm.provision "shell", inline: <<-SHELL
-       sudo apt-get update
-       sudo apt-get install -y apt-transport-https ca-certificates ntpdate
-       sudo ntpdate -s time.nist.gov
-       sudo curl -fsSL https://packages.docker.com/1.13/install.sh | sh
-       sudo usermod -aG docker ubuntu
-       ifconfig enp0s8 | grep 'inet addr:' | cut -d: -f2 | awk '{ print $1}' > /vagrant/ucp-vancouver-node1-ipaddr
-       export UCP_IPADDR=$(cat /vagrant/ucp-vancouver-node1-ipaddr)
-       export UCP_PASSWORD=$(cat /vagrant/ucp_password)
-       export HUB_USERNAME=$(cat /vagrant/hub_username)
-       export HUB_PASSWORD=$(cat /vagrant/hub_password)
-       sudo sh -c "echo '${UCP_IPADDR} ucp.local' >> /etc/hosts"
-       sudo sh -c "echo '172.28.128.11 dtr.local' >> /etc/hosts"
-       docker login -u ${HUB_USERNAME} -p ${HUB_PASSWORD}
-       docker pull docker/ucp:2.1.0
-       docker run --rm --name ucp -v /var/run/docker.sock:/var/run/docker.sock docker/ucp:2.1.0 install --host-address ${UCP_IPADDR} --admin-password ${UCP_PASSWORD} --san ucp.local --license $(cat /vagrant/docker_subscription.lic)
-       docker swarm join-token manager | awk -F " " '/token/ {print $2}' > /vagrant/swarm-join-token-mgr
-       docker swarm join-token worker | awk -F " " '/token/ {print $2}' > /vagrant/swarm-join-token-worker
-       docker run --rm --name ucp -v /var/run/docker.sock:/var/run/docker.sock docker/ucp:2.1.0 id | awk '{ print $1}' > /vagrant/ucp-vancouver-id
-       export UCP_ID=$(cat /vagrant/ucp-vancouver-id)
-       docker run --rm -i --name ucp -v /var/run/docker.sock:/var/run/docker.sock docker/ucp:2.1.0 backup --id ${UCP_ID} --root-ca-only --passphrase "secret" > /vagrant/backup.tar
+        sudo apt-get install -y apt-transport-https ca-certificates ntpdate curl software-properties-common
+        sudo ntpdate -s time.nist.gov
+        export DOCKER_EE_URL=$(cat /vagrant/ee_url)
+        sudo curl -fsSL ${DOCKER_EE_URL}/gpg | sudo apt-key add
+        sudo add-apt-repository "deb [arch=amd64] ${DOCKER_EE_URL} $(lsb_release -cs) stable-17.03"
+        sudo apt-get update
+        sudo apt-get -y install docker-ee
+        sudo usermod -aG docker ubuntu
+        ifconfig enp0s8 | grep 'inet addr:' | cut -d: -f2 | awk '{ print $1}' > /vagrant/ucp-vancouver-node1-ipaddr
+        export UCP_IPADDR=$(cat /vagrant/ucp-vancouver-node1-ipaddr)
+        export UCP_PASSWORD=$(cat /vagrant/ucp_password)
+        export HUB_USERNAME=$(cat /vagrant/hub_username)
+        export HUB_PASSWORD=$(cat /vagrant/hub_password)
+        sudo sh -c "echo '${UCP_IPADDR} ucp.local' >> /etc/hosts"
+        sudo sh -c "echo '172.28.128.11 dtr.local' >> /etc/hosts"
+        docker login -u ${HUB_USERNAME} -p ${HUB_PASSWORD}
+        docker pull docker/ucp:2.1.0
+        docker run --rm --name ucp -v /var/run/docker.sock:/var/run/docker.sock docker/ucp:2.1.0 install --host-address ${UCP_IPADDR} --admin-password ${UCP_PASSWORD} --san ucp.local --license $(cat /vagrant/docker_subscription.lic)
+        docker swarm join-token manager | awk -F " " '/token/ {print $2}' > /vagrant/swarm-join-token-mgr
+        docker swarm join-token worker | awk -F " " '/token/ {print $2}' > /vagrant/swarm-join-token-worker
+        docker run --rm --name ucp -v /var/run/docker.sock:/var/run/docker.sock docker/ucp:2.1.0 id | awk '{ print $1}' > /vagrant/ucp-vancouver-id
+        export UCP_ID=$(cat /vagrant/ucp-vancouver-id)
+        docker run --rm -i --name ucp -v /var/run/docker.sock:/var/run/docker.sock docker/ucp:2.1.0 backup --id ${UCP_ID} --root-ca-only --passphrase "secret" > /vagrant/backup.tar
      SHELL
     end
 
@@ -59,10 +62,13 @@ Vagrant.configure(2) do |config|
          vb.name = "dtr-vancouver-node1"
       end
       dtr_vancouver_node1.vm.provision "shell", inline: <<-SHELL
-        sudo apt-get update
-        sudo apt-get install -y apt-transport-https ca-certificates ntpdate
+        sudo apt-get install -y apt-transport-https ca-certificates ntpdate curl software-properties-common
         sudo ntpdate -s time.nist.gov
-        sudo curl -fsSL https://packages.docker.com/1.13/install.sh | sh
+        export DOCKER_EE_URL=$(cat /vagrant/ee_url)
+        sudo curl -fsSL ${DOCKER_EE_URL}/gpg | sudo apt-key add
+        sudo add-apt-repository "deb [arch=amd64] ${DOCKER_EE_URL} $(lsb_release -cs) stable-17.03"
+        sudo apt-get update
+        sudo apt-get -y install docker-ee
         sudo usermod -aG docker ubuntu
         # Login to Hub
         export HUB_USERNAME=$(cat /vagrant/hub_username)
@@ -110,25 +116,28 @@ Vagrant.configure(2) do |config|
          vb.name = "worker-node1"
       end
       worker_node1.vm.provision "shell", inline: <<-SHELL
-       sudo apt-get update
-       sudo apt-get install -y apt-transport-https ca-certificates ntpdate
-       sudo ntpdate -s time.nist.gov
-       sudo curl -fsSL https://packages.docker.com/1.13/install.sh | sh
-       sudo usermod -aG docker ubuntu
-       ifconfig enp0s8 | grep 'inet addr:' | cut -d: -f2 | awk '{ print $1}' > /vagrant/worker-node1-ipaddr
-       export HUB_USERNAME=$(cat /vagrant/hub_username)
-       export HUB_PASSWORD=$(cat /vagrant/hub_password)
-       docker login -u ${HUB_USERNAME} -p ${HUB_PASSWORD}
-       docker pull docker/ucp:2.1.0
-       # Join Swarm as worker
-       export UCP_IPADDR=$(cat /vagrant/ucp-vancouver-node1-ipaddr)
-       export DTR_IPADDR=$(cat /vagrant/dtr-vancouver-node1-ipaddr)
-       export SWARM_JOIN_TOKEN_WORKER=$(cat /vagrant/swarm-join-token-worker)
-       docker swarm join --token ${SWARM_JOIN_TOKEN_WORKER} ${UCP_IPADDR}:2377
-       # Trust self-signed DTR CA
-       openssl s_client -connect ${DTR_IPADDR}:443 -showcerts </dev/null 2>/dev/null | openssl x509 -outform PEM | sudo tee /usr/local/share/ca-certificates/${DTR_IPADDR}.crt
-       sudo update-ca-certificates
-       sudo service docker restart
+        sudo apt-get install -y apt-transport-https ca-certificates ntpdate curl software-properties-common
+        sudo ntpdate -s time.nist.gov
+        export DOCKER_EE_URL=$(cat /vagrant/ee_url)
+        sudo curl -fsSL ${DOCKER_EE_URL}/gpg | sudo apt-key add
+        sudo add-apt-repository "deb [arch=amd64] ${DOCKER_EE_URL} $(lsb_release -cs) stable-17.03"
+        sudo apt-get update
+        sudo apt-get -y install docker-ee
+        sudo usermod -aG docker ubuntu
+        ifconfig enp0s8 | grep 'inet addr:' | cut -d: -f2 | awk '{ print $1}' > /vagrant/worker-node1-ipaddr
+        export HUB_USERNAME=$(cat /vagrant/hub_username)
+        export HUB_PASSWORD=$(cat /vagrant/hub_password)
+        docker login -u ${HUB_USERNAME} -p ${HUB_PASSWORD}
+        docker pull docker/ucp:2.1.0
+        # Join Swarm as worker
+        export UCP_IPADDR=$(cat /vagrant/ucp-vancouver-node1-ipaddr)
+        export DTR_IPADDR=$(cat /vagrant/dtr-vancouver-node1-ipaddr)
+        export SWARM_JOIN_TOKEN_WORKER=$(cat /vagrant/swarm-join-token-worker)
+        docker swarm join --token ${SWARM_JOIN_TOKEN_WORKER} ${UCP_IPADDR}:2377
+        # Trust self-signed DTR CA
+        openssl s_client -connect ${DTR_IPADDR}:443 -showcerts </dev/null 2>/dev/null | openssl x509 -outform PEM | sudo tee /usr/local/share/ca-certificates/${DTR_IPADDR}.crt
+        sudo update-ca-certificates
+        sudo service docker restart
      SHELL
     end
 
@@ -144,40 +153,43 @@ Vagrant.configure(2) do |config|
          vb.name = "worker-node2"
       end
       worker_node2.vm.provision "shell", inline: <<-SHELL
-       sudo apt-get update
-       sudo apt-get install -y apt-transport-https ca-certificates ntpdate
-       sudo ntpdate -s time.nist.gov
-       sudo curl -fsSL https://packages.docker.com/1.13/install.sh | sh
-       sudo usermod -aG docker ubuntu
-       ifconfig enp0s8 | grep 'inet addr:' | cut -d: -f2 | awk '{ print $1}' > /vagrant/worker-node2-ipaddr
-       export HUB_USERNAME=$(cat /vagrant/hub_username)
-       export HUB_PASSWORD=$(cat /vagrant/hub_password)
-       docker login -u ${HUB_USERNAME} -p ${HUB_PASSWORD}
-       docker pull docker/ucp:2.1.0
-       # Join Swarm as worker
-       export UCP_IPADDR=$(cat /vagrant/ucp-vancouver-node1-ipaddr)
-       export DTR_IPADDR=$(cat /vagrant/dtr-vancouver-node1-ipaddr)
-       export SWARM_JOIN_TOKEN_WORKER=$(cat /vagrant/swarm-join-token-worker)
-       export WORKER_NODE_NAME=$(hostname)
-       docker swarm join --token ${SWARM_JOIN_TOKEN_WORKER} ${UCP_IPADDR}:2377
-       # Trust self-signed DTR CA
-       openssl s_client -connect ${DTR_IPADDR}:443 -showcerts </dev/null 2>/dev/null | openssl x509 -outform PEM | sudo tee /usr/local/share/ca-certificates/${DTR_IPADDR}.crt
-       sudo update-ca-certificates
-       sudo service docker restart
-       # Install Notary
-       curl -L https://github.com/docker/notary/releases/download/v0.4.3/notary-Linux-amd64 > /home/ubuntu/notary
-       chmod +x /home/ubuntu/notary
-       # Create jenkins folder to store Jenkins container config
-       sudo mkdir /home/ubuntu/jenkins
-       # Create notary foldoer to store trust config
-       sudo mkdir -p /home/ubuntu/notary-config/.docker/trust
+        sudo apt-get install -y apt-transport-https ca-certificates ntpdate curl software-properties-common
+        sudo ntpdate -s time.nist.gov
+        export DOCKER_EE_URL=$(cat /vagrant/ee_url)
+        sudo curl -fsSL ${DOCKER_EE_URL}/gpg | sudo apt-key add
+        sudo add-apt-repository "deb [arch=amd64] ${DOCKER_EE_URL} $(lsb_release -cs) stable-17.03"
+        sudo apt-get update
+        sudo apt-get -y install docker-ee
+        sudo usermod -aG docker ubuntu
+        ifconfig enp0s8 | grep 'inet addr:' | cut -d: -f2 | awk '{ print $1}' > /vagrant/worker-node2-ipaddr
+        export HUB_USERNAME=$(cat /vagrant/hub_username)
+        export HUB_PASSWORD=$(cat /vagrant/hub_password)
+        docker login -u ${HUB_USERNAME} -p ${HUB_PASSWORD}
+        docker pull docker/ucp:2.1.0
+        # Join Swarm as worker
+        export UCP_IPADDR=$(cat /vagrant/ucp-vancouver-node1-ipaddr)
+        export DTR_IPADDR=$(cat /vagrant/dtr-vancouver-node1-ipaddr)
+        export SWARM_JOIN_TOKEN_WORKER=$(cat /vagrant/swarm-join-token-worker)
+        export WORKER_NODE_NAME=$(hostname)
+        docker swarm join --token ${SWARM_JOIN_TOKEN_WORKER} ${UCP_IPADDR}:2377
+        # Trust self-signed DTR CA
+        openssl s_client -connect ${DTR_IPADDR}:443 -showcerts </dev/null 2>/dev/null | openssl x509 -outform PEM | sudo tee /usr/local/share/ca-certificates/${DTR_IPADDR}.crt
+        sudo update-ca-certificates
+        sudo service docker restart
+        # Install Notary
+        curl -L https://github.com/docker/notary/releases/download/v0.4.3/notary-Linux-amd64 > /home/ubuntu/notary
+        chmod +x /home/ubuntu/notary
+        # Create jenkins folder to store Jenkins container config
+        sudo mkdir /home/ubuntu/jenkins
+        # Create notary foldoer to store trust config
+        sudo mkdir -p /home/ubuntu/notary-config/.docker/trust
      SHELL
     end
 
     # Application Worker Node 3
     config.vm.define "worker-node3" do |worker_node3|
       worker_node3.vm.box = "ubuntu/xenial64"
-      worker_node3.vm.network "private_network", ip: "172.28.128.13"
+      worker_node3.vm.network "private_network", ip: "172.28.128.14"
       worker_node3.vm.hostname = "worker-node3"
       config.vm.provider :virtualbox do |vb|
          vb.customize ["modifyvm", :id, "--memory", "2048"]
@@ -186,26 +198,29 @@ Vagrant.configure(2) do |config|
          vb.name = "worker-node3"
       end
       worker_node3.vm.provision "shell", inline: <<-SHELL
-       sudo apt-get update
-       sudo apt-get install -y apt-transport-https ca-certificates ntpdate
-       sudo ntpdate -s time.nist.gov
-       sudo curl -fsSL https://packages.docker.com/1.13/install.sh | sh
-       sudo usermod -aG docker ubuntu
-       ifconfig enp0s8 | grep 'inet addr:' | cut -d: -f2 | awk '{ print $1}' > /vagrant/worker-node3-ipaddr
-       export HUB_USERNAME=$(cat /vagrant/hub_username)
-       export HUB_PASSWORD=$(cat /vagrant/hub_password)
-       docker login -u ${HUB_USERNAME} -p ${HUB_PASSWORD}
-       docker pull docker/ucp:2.1.0
-       # Join Swarm as worker
-       export UCP_IPADDR=$(cat /vagrant/ucp-vancouver-node1-ipaddr)
-       export DTR_IPADDR=$(cat /vagrant/dtr-vancouver-node1-ipaddr)
-       export SWARM_JOIN_TOKEN_WORKER=$(cat /vagrant/swarm-join-token-worker)
-       export WORKER_NODE_NAME=$(hostname)
-       docker swarm join --token ${SWARM_JOIN_TOKEN_WORKER} ${UCP_IPADDR}:2377
-       # Trust self-signed DTR CA
-       openssl s_client -connect ${DTR_IPADDR}:443 -showcerts </dev/null 2>/dev/null | openssl x509 -outform PEM | sudo tee /usr/local/share/ca-certificates/${DTR_IPADDR}.crt
-       sudo update-ca-certificates
-       sudo service docker restart
+        sudo apt-get install -y apt-transport-https ca-certificates ntpdate curl software-properties-common
+        sudo ntpdate -s time.nist.gov
+        export DOCKER_EE_URL=$(cat /vagrant/ee_url)
+        sudo curl -fsSL ${DOCKER_EE_URL}/gpg | sudo apt-key add
+        sudo add-apt-repository "deb [arch=amd64] ${DOCKER_EE_URL} $(lsb_release -cs) stable-17.03"
+        sudo apt-get update
+        sudo apt-get -y install docker-ee
+        sudo usermod -aG docker ubuntu
+        ifconfig enp0s8 | grep 'inet addr:' | cut -d: -f2 | awk '{ print $1}' > /vagrant/worker-node3-ipaddr
+        export HUB_USERNAME=$(cat /vagrant/hub_username)
+        export HUB_PASSWORD=$(cat /vagrant/hub_password)
+        docker login -u ${HUB_USERNAME} -p ${HUB_PASSWORD}
+        docker pull docker/ucp:2.1.0
+        # Join Swarm as worker
+        export UCP_IPADDR=$(cat /vagrant/ucp-vancouver-node1-ipaddr)
+        export DTR_IPADDR=$(cat /vagrant/dtr-vancouver-node1-ipaddr)
+        export SWARM_JOIN_TOKEN_WORKER=$(cat /vagrant/swarm-join-token-worker)
+        export WORKER_NODE_NAME=$(hostname)
+        docker swarm join --token ${SWARM_JOIN_TOKEN_WORKER} ${UCP_IPADDR}:2377
+        # Trust self-signed DTR CA
+        openssl s_client -connect ${DTR_IPADDR}:443 -showcerts </dev/null 2>/dev/null | openssl x509 -outform PEM | sudo tee /usr/local/share/ca-certificates/${DTR_IPADDR}.crt
+        sudo update-ca-certificates
+        sudo service docker restart
      SHELL
     end
 
