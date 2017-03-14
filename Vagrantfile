@@ -107,7 +107,7 @@ Vagrant.configure(2) do |config|
          vb.name = "worker-node1"
       end
       worker_node1.vm.provision "shell", inline: <<-SHELL
-        sudo apt-get install -y apt-transport-https ca-certificates ntpdate curl software-properties-common
+        sudo apt-get install -y apt-transport-https ca-certificates ntpdate curl software-properties-common jq zip
         sudo ntpdate -s time.nist.gov
         export DOCKER_EE_URL=$(cat /vagrant/ee_url)
         sudo curl -fsSL ${DOCKER_EE_URL}/gpg | sudo apt-key add
