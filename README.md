@@ -1,4 +1,4 @@
-Vagrant Virtualbox setup for Docker EE 17.03, UCP 2.1.0 and DTR 2.2.3
+Vagrant Virtualbox setup for Docker EE 17.03, UCP 2.1.1 and DTR 2.2.3
 ========================
 
 The following set of instructions helps Docker DataCenter across multiple vms with static ip addresses:

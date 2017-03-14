@@ -32,12 +32,12 @@ Vagrant.configure(2) do |config|
         sudo sh -c "echo '172.28.128.11 dtr.local' >> /etc/hosts"
         docker login -u ${HUB_USERNAME} -p ${HUB_PASSWORD}
         docker pull docker/ucp:2.1.0
-        docker run --rm --name ucp -v /var/run/docker.sock:/var/run/docker.sock docker/ucp:2.1.0 install --host-address ${UCP_IPADDR} --admin-password ${UCP_PASSWORD} --san ucp.local --license $(cat /vagrant/docker_subscription.lic)
+        docker run --rm --name ucp -v /var/run/docker.sock:/var/run/docker.sock docker/ucp:2.1.1 install --host-address ${UCP_IPADDR} --admin-password ${UCP_PASSWORD} --san ucp.local --license $(cat /vagrant/docker_subscription.lic)
         docker swarm join-token manager | awk -F " " '/token/ {print $2}' > /vagrant/swarm-join-token-mgr
         docker swarm join-token worker | awk -F " " '/token/ {print $2}' > /vagrant/swarm-join-token-worker
-        docker run --rm --name ucp -v /var/run/docker.sock:/var/run/docker.sock docker/ucp:2.1.0 id | awk '{ print $1}' > /vagrant/ucp-vancouver-id
+        docker run --rm --name ucp -v /var/run/docker.sock:/var/run/docker.sock docker/ucp:2.1.1 id | awk '{ print $1}' > /vagrant/ucp-vancouver-id
         export UCP_ID=$(cat /vagrant/ucp-vancouver-id)
-        docker run --rm -i --name ucp -v /var/run/docker.sock:/var/run/docker.sock docker/ucp:2.1.0 backup --id ${UCP_ID} --root-ca-only --passphrase "secret" > /vagrant/backup.tar
+        docker run --rm -i --name ucp -v /var/run/docker.sock:/var/run/docker.sock docker/ucp:2.1.1 backup --id ${UCP_ID} --root-ca-only --passphrase "secret" > /vagrant/backup.tar
      SHELL
     end
 
@@ -77,7 +77,7 @@ Vagrant.configure(2) do |config|
         export DTR_REPLICA_ID=$(cat /vagrant/dtr-replica-id)
         sudo sh -c "echo '${UCP_IPADDR} ucp.local' >> /etc/hosts"
         sudo sh -c "echo '${DTR_IPADDR} dtr.local' >> /etc/hosts"
-        docker pull docker/ucp:2.1.0
+        docker pull docker/ucp:2.1.1
         docker swarm join --token ${SWARM_JOIN_TOKEN_WORKER} ${UCP_IPADDR}:2377
         # Wait for Join to complete
         sleep 30
@@ -119,7 +119,7 @@ Vagrant.configure(2) do |config|
         export HUB_USERNAME=$(cat /vagrant/hub_username)
         export HUB_PASSWORD=$(cat /vagrant/hub_password)
         docker login -u ${HUB_USERNAME} -p ${HUB_PASSWORD}
-        docker pull docker/ucp:2.1.0
+        docker pull docker/ucp:2.1.1
         # Join Swarm as worker
         export UCP_IPADDR=$(cat /vagrant/ucp-vancouver-node1-ipaddr)
         export DTR_IPADDR=$(cat /vagrant/dtr-vancouver-node1-ipaddr)
@@ -156,7 +156,7 @@ Vagrant.configure(2) do |config|
         export HUB_USERNAME=$(cat /vagrant/hub_username)
         export HUB_PASSWORD=$(cat /vagrant/hub_password)
         docker login -u ${HUB_USERNAME} -p ${HUB_PASSWORD}
-        docker pull docker/ucp:2.1.0
+        docker pull docker/ucp:2.1.1
         # Join Swarm as worker
         export UCP_IPADDR=$(cat /vagrant/ucp-vancouver-node1-ipaddr)
         export DTR_IPADDR=$(cat /vagrant/dtr-vancouver-node1-ipaddr)
@@ -174,6 +174,11 @@ Vagrant.configure(2) do |config|
         sudo mkdir /home/ubuntu/jenkins
         # Create notary foldoer to store trust config
         sudo mkdir -p /home/ubuntu/notary-config/.docker/trust
+        # Download UCP client bundle
+        export AUTHTOKEN=$(curl -sk -d "{'username':'admin','password':${UCP_PASSWORD}}" https://${UCP_IPADDR}/auth/login | jq -r .auth_token)
+        sudo mkdir ucp-bundle-admin
+        curl -k -H "Authorization: Bearer ${AUTHTOKEN}" https://${UCP_IPADDR}/api/clientbundle -o ucp-bundle-admin/bundle.zip
+        sudo unzip /home/vagrant/ucp-bundle-admin/bundle.zip -d /home/vagrant/ucp-bundle-admin/
      SHELL
     end
 
@@ -201,7 +206,7 @@ Vagrant.configure(2) do |config|
         export HUB_USERNAME=$(cat /vagrant/hub_username)
         export HUB_PASSWORD=$(cat /vagrant/hub_password)
         docker login -u ${HUB_USERNAME} -p ${HUB_PASSWORD}
-        docker pull docker/ucp:2.1.0
+        docker pull docker/ucp:2.1.1
         # Join Swarm as worker
         export UCP_IPADDR=$(cat /vagrant/ucp-vancouver-node1-ipaddr)
         export DTR_IPADDR=$(cat /vagrant/dtr-vancouver-node1-ipaddr)
