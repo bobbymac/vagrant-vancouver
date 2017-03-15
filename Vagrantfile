@@ -189,7 +189,7 @@ Vagrant.configure(2) do |config|
         export DOCKER_CERT_PATH="/home/ubuntu/ucp-bundle-admin"
         export DOCKER_HOST=tcp://${UCP_IPADDR}:443
         # Add Jenkins label to worker node
-        docker node update --label-add jenkins master
+        docker node update --label-add jenkins=master worker-node2
         # Deploy Jenkins as a container
         docker service create --name leroy-jenkins --network ucp-hrm --publish 8080:8080 \
           --mount type=bind,source=/home/ubuntu/jenkins,destination=/var/jenkins_home \
