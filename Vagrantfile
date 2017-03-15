@@ -107,7 +107,7 @@ Vagrant.configure(2) do |config|
          vb.name = "worker-node1"
       end
       worker_node1.vm.provision "shell", inline: <<-SHELL
-        sudo apt-get install -y apt-transport-https ca-certificates ntpdate curl software-properties-common jq zip
+        sudo apt-get install -y apt-transport-https ca-certificates ntpdate curl software-properties-common
         sudo ntpdate -s time.nist.gov
         export DOCKER_EE_URL=$(cat /vagrant/ee_url)
         sudo curl -fsSL ${DOCKER_EE_URL}/gpg | sudo apt-key add
@@ -144,7 +144,7 @@ Vagrant.configure(2) do |config|
          vb.name = "worker-node2"
       end
       worker_node2.vm.provision "shell", inline: <<-SHELL
-        sudo apt-get install -y apt-transport-https ca-certificates ntpdate curl software-properties-common
+        sudo apt-get install -y apt-transport-https ca-certificates ntpdate curl software-properties-common jq zip
         sudo ntpdate -s time.nist.gov
         export DOCKER_EE_URL=$(cat /vagrant/ee_url)
         sudo curl -fsSL ${DOCKER_EE_URL}/gpg | sudo apt-key add
@@ -158,6 +158,7 @@ Vagrant.configure(2) do |config|
         docker login -u ${HUB_USERNAME} -p ${HUB_PASSWORD}
         docker pull docker/ucp:2.1.1
         # Join Swarm as worker
+        export UCP_PASSWORD=$(cat /vagrant/ucp_password)
         export UCP_IPADDR=$(cat /vagrant/ucp-vancouver-node1-ipaddr)
         export DTR_IPADDR=$(cat /vagrant/dtr-vancouver-node1-ipaddr)
         export SWARM_JOIN_TOKEN_WORKER=$(cat /vagrant/swarm-join-token-worker)
@@ -175,10 +176,28 @@ Vagrant.configure(2) do |config|
         # Create notary foldoer to store trust config
         sudo mkdir -p /home/ubuntu/notary-config/.docker/trust
         # Download UCP client bundle
-        export AUTHTOKEN=$(curl -sk -d "{'username':'admin','password':${UCP_PASSWORD}}" https://${UCP_IPADDR}/auth/login | jq -r .auth_token)
+        export AUTHTOKEN=$(curl -sk -d "{\"username\":\"admin\",\"password\":\"${UCP_PASSWORD}\"}" https://${UCP_IPADDR}/auth/login | jq -r .auth_token)
         sudo mkdir ucp-bundle-admin
-        curl -k -H "Authorization: Bearer ${AUTHTOKEN}" https://${UCP_IPADDR}/api/clientbundle -o ucp-bundle-admin/bundle.zip
-        sudo unzip /home/vagrant/ucp-bundle-admin/bundle.zip -d /home/vagrant/ucp-bundle-admin/
+        sudo curl -k -H "Authorization: Bearer ${AUTHTOKEN}" https://${UCP_IPADDR}/api/clientbundle -o /home/ubuntu/ucp-bundle-admin/bundle.zip
+        sudo unzip /home/ubuntu/ucp-bundle-admin/bundle.zip -d /home/ubuntu/ucp-bundle-admin/
+        # Authenticate to Swarm
+        export DOCKER_TLS_VERIFY=1
+        export DOCKER_CERT_PATH="/home/ubuntu/ucp-bundle-admin"
+        export DOCKER_HOST=tcp://${UCP_IPADDR}:443
+        # Deploy Jenkins as a container
+        docker service create --name leroy-jenkins --network ucp-hrm --publish 8080:8080 \
+          --mount type=bind,source=/home/ubuntu/jenkins,destination=/var/jenkins_home \
+          --mount type=bind,source=/home/ubuntu/notary-config/.docker/trust,destination=/root/.docker/trust \
+          --mount type=bind,source=/var/run/docker.sock,destination=/var/run/docker.sock \
+          --mount type=bind,source=/usr/bin/docker,destination=/usr/bin/docker \
+          --mount type=bind,source=/home/ubuntu/ucp-bundle-admin,destination=/home/jenkins/ucp-bundle-admin \
+          --mount type=bind,source=/home/ubuntu/scripts,destination=/home/jenkins/scripts \
+          --mount type=bind,source=/home/ubuntu/notary,destination=/usr/local/bin/notary \
+          --label com.docker.ucp.mesh.http.8080=external_route=http://jenkins.local,internal_port=8080 \
+          --constraint 'node.labels.jenkins == master' yongshin/leroy-jenkins
+        # Have Jenkins trust DTR
+        export JENKINS_CONTAINER_ID=$(docker ps | grep leroy-jenkins | awk '{ print $1}')
+        docker exec -it ${JENKINS_CONTAINER_ID} /bin/sh -c "export DTR_IPADDR=${DTR_IPADDR}; ./home/jenkins/scripts/trust-dtr.sh"
      SHELL
     end
 
