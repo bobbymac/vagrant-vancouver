@@ -182,6 +182,7 @@ Vagrant.configure(2) do |config|
         echo "Downloading ucp bundle"
         sudo curl -k -H "Authorization: Bearer ${AUTHTOKEN}" https://${UCP_IPADDR}/api/clientbundle -H 'accept: application/json, text/plain, */*' --insecure > /home/ubuntu/ucp-bundle-admin/bundle.zip
         sudo unzip /home/ubuntu/ucp-bundle-admin/bundle.zip -d /home/ubuntu/ucp-bundle-admin/
+        sudo rm -f /home/ubuntu/ucp-bundle-admin/bundle.zip
         # Authenticate to UCP Swarm
         export DOCKER_TLS_VERIFY=1
         export DOCKER_CERT_PATH="/home/ubuntu/ucp-bundle-admin"
@@ -189,6 +190,7 @@ Vagrant.configure(2) do |config|
         # Add Jenkins label to worker node
         docker node update --label-add jenkins=master worker-node2
         # Deploy Jenkins as a container
+        sudo cp -r /vagrant/scripts/ /home/ubuntu/scripts
         docker service create --name leroy-jenkins --network ucp-hrm --publish 8080:8080 \
           --mount type=bind,source=/home/ubuntu/jenkins,destination=/var/jenkins_home \
           --mount type=bind,source=/home/ubuntu/notary-config/.docker/trust,destination=/root/.docker/trust \
