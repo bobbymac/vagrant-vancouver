@@ -6,7 +6,7 @@ The following set of instructions helps Docker DataCenter across multiple vms wi
 * UCP - ucp.local on 172.28.128.10
 * DTR - dtr.local on 172.28.128.11
 * Worker node 1 - worker-node1 on 172.28.128.12
-* Worker node 2 - worker-node2 on 172.28.128.13, just Jenkins as a container
+* Worker node 2 - worker-node2 on 172.28.128.13, runs Jenkins as a container pinned to this node
 * Worker node 3 - worker-node3 on 172.28.128.14
 
 ## Download vagrant from Vagrant website

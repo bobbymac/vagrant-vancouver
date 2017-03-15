@@ -177,8 +177,6 @@ Vagrant.configure(2) do |config|
         sudo mkdir -p /home/ubuntu/notary-config/.docker/trust
         # Download UCP client bundle
         echo "Retrieving authtoken"
-        # sudo curl -sk -d '{"username":"admin","password":"'"${UCP_PASSWORD}"'"}' https://${UCP_IPADDR}/auth/login > token
-        # export AUTHTOKEN=$(jq -r .auth_token token)
         export AUTHTOKEN=$(curl -sk -d '{"username":"admin","password":"'"${UCP_PASSWORD}"'"}' https://${UCP_IPADDR}/auth/login | jq -r .auth_token)
         sudo mkdir ucp-bundle-admin
         echo "Downloading ucp bundle"
