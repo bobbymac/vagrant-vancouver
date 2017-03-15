@@ -176,14 +176,20 @@ Vagrant.configure(2) do |config|
         # Create notary foldoer to store trust config
         sudo mkdir -p /home/ubuntu/notary-config/.docker/trust
         # Download UCP client bundle
-        export AUTHTOKEN=$(curl -sk -d "{\"username\":\"admin\",\"password\":\"${UCP_PASSWORD}\"}" https://${UCP_IPADDR}/auth/login | jq -r .auth_token)
+        echo "Retrieving authtoken"
+        # sudo curl -sk -d '{"username":"admin","password":"'"${UCP_PASSWORD}"'"}' https://${UCP_IPADDR}/auth/login > token
+        # export AUTHTOKEN=$(jq -r .auth_token token)
+        export AUTHTOKEN=$(curl -sk -d '{"username":"admin","password":"'"${UCP_PASSWORD}"'"}' https://${UCP_IPADDR}/auth/login | jq -r .auth_token)
         sudo mkdir ucp-bundle-admin
-        sudo curl -k -H "Authorization: Bearer ${AUTHTOKEN}" https://${UCP_IPADDR}/api/clientbundle -o /home/ubuntu/ucp-bundle-admin/bundle.zip
+        echo "Downloading ucp bundle"
+        sudo curl -k -H "Authorization: Bearer ${AUTHTOKEN}" https://${UCP_IPADDR}/api/clientbundle -H 'accept: application/json, text/plain, */*' --insecure > /home/ubuntu/ucp-bundle-admin/bundle.zip
         sudo unzip /home/ubuntu/ucp-bundle-admin/bundle.zip -d /home/ubuntu/ucp-bundle-admin/
-        # Authenticate to Swarm
+        # Authenticate to UCP Swarm
         export DOCKER_TLS_VERIFY=1
         export DOCKER_CERT_PATH="/home/ubuntu/ucp-bundle-admin"
         export DOCKER_HOST=tcp://${UCP_IPADDR}:443
+        # Add Jenkins label to worker node
+        docker node update --label-add jenkins master
         # Deploy Jenkins as a container
         docker service create --name leroy-jenkins --network ucp-hrm --publish 8080:8080 \
           --mount type=bind,source=/home/ubuntu/jenkins,destination=/var/jenkins_home \
