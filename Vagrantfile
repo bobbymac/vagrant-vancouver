@@ -31,7 +31,7 @@ Vagrant.configure(2) do |config|
         sudo sh -c "echo '${UCP_IPADDR} ucp.local' >> /etc/hosts"
         sudo sh -c "echo '172.28.128.11 dtr.local' >> /etc/hosts"
         docker login -u ${HUB_USERNAME} -p ${HUB_PASSWORD}
-        docker pull docker/ucp:2.1.0
+        docker pull docker/ucp:2.1.1
         docker run --rm --name ucp -v /var/run/docker.sock:/var/run/docker.sock docker/ucp:2.1.1 install --host-address ${UCP_IPADDR} --admin-password ${UCP_PASSWORD} --san ucp.local --license $(cat /vagrant/docker_subscription.lic)
         docker swarm join-token manager | awk -F " " '/token/ {print $2}' > /vagrant/swarm-join-token-mgr
         docker swarm join-token worker | awk -F " " '/token/ {print $2}' > /vagrant/swarm-join-token-worker
