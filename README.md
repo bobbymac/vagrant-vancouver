@@ -43,17 +43,17 @@ ee_url
 ## Bring up/Resume UCP, DTR, and Jenkins nodes
 
 ```
-vagrant up ucp-vancouver-node1 dtr-vancouver-node1 worker-node1 worker-node2
+vagrant up ucp-vancouver-node1 dtr-vancouver-node1 worker-node1 worker-node2 worker-node3
 ```
 
 ## Stop UCP, DTR, and Jenkins nodes
 
 ```
-vagrant halt ucp-vancouver-node1 dtr-vancouver-node1 worker-node1 worker-node2
+vagrant halt ucp-vancouver-node1 dtr-vancouver-node1 worker-node1 worker-node2 worker-node3
 ```
 
 ## Destroy UCP, DTR, and Jenkins nodes
 
 ```
-vagrant destroy ucp-vancouver-node1 dtr-vancouver-node1 worker-node1 worker-node2
+vagrant destroy ucp-vancouver-node1 dtr-vancouver-node1 worker-node1 worker-node2 worker-node3
 ```
