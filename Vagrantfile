@@ -7,7 +7,7 @@ Vagrant.configure(2) do |config|
     config.vm.define "ucp-vancouver-node1" do |ucp_vancouver_node1|
       ucp_vancouver_node1.vm.box = "ubuntu/xenial64"
       ucp_vancouver_node1.vm.network "private_network", ip: "172.28.128.10"
-      ucp_vancouver_node1.vm.hostname = "ucp.local"
+      ucp_vancouver_node1.vm.hostname = "ucp.demo-gods.com/
       config.vm.provider :virtualbox do |vb|
          vb.customize ["modifyvm", :id, "--memory", "2048"]
          vb.customize ["modifyvm", :id, "--cpus", "2"]
@@ -28,11 +28,11 @@ Vagrant.configure(2) do |config|
         export UCP_PASSWORD=$(cat /vagrant/ucp_password)
         export HUB_USERNAME=$(cat /vagrant/hub_username)
         export HUB_PASSWORD=$(cat /vagrant/hub_password)
-        sudo sh -c "echo '${UCP_IPADDR} ucp.local' >> /etc/hosts"
-        sudo sh -c "echo '172.28.128.11 dtr.local' >> /etc/hosts"
+        sudo sh -c "echo '${UCP_IPADDR} ucp.demo-gods.com' >> /etc/hosts"
+        sudo sh -c "echo '172.28.128.11 dtr.demo-gods.com' >> /etc/hosts"
         docker login -u ${HUB_USERNAME} -p ${HUB_PASSWORD}
         docker pull docker/ucp:2.1.3
-        docker run --rm --name ucp -v /var/run/docker.sock:/var/run/docker.sock docker/ucp:2.1.3 install --host-address ${UCP_IPADDR} --admin-password ${UCP_PASSWORD} --san ucp.local --license $(cat /vagrant/docker_subscription.lic)
+	docker run --rm --name ucp -v /var/run/docker.sock:/var/run/docker.sock docker/ucp:2.1.3 install --host-address ${UCP_IPADDR} --admin-password ${UCP_PASSWORD} --san ucp.demo-gods.com --license $(cat /vagrant/docker_subscription.lic)
         docker swarm join-token manager | awk -F " " '/token/ {print $2}' > /vagrant/swarm-join-token-mgr
         docker swarm join-token worker | awk -F " " '/token/ {print $2}' > /vagrant/swarm-join-token-worker
         docker run --rm --name ucp -v /var/run/docker.sock:/var/run/docker.sock docker/ucp:2.1.3 id | awk '{ print $1}' > /vagrant/ucp-vancouver-id
@@ -45,7 +45,7 @@ Vagrant.configure(2) do |config|
     config.vm.define "dtr-vancouver-node1" do |dtr_vancouver_node1|
       dtr_vancouver_node1.vm.box = "ubuntu/xenial64"
       dtr_vancouver_node1.vm.network "private_network", ip: "172.28.128.11"
-      dtr_vancouver_node1.vm.hostname = "dtr.local"
+      dtr_vancouver_node1.vm.hostname = "dtr.demo-gods.com"
       config.vm.provider :virtualbox do |vb|
          vb.customize ["modifyvm", :id, "--memory", "2048"]
          vb.customize ["modifyvm", :id, "--cpus", "2"]
@@ -70,13 +70,13 @@ Vagrant.configure(2) do |config|
         cat /dev/urandom | tr -dc 'a-f0-9' | fold -w 12 | head -n 1 > /vagrant/dtr-replica-id
         export UCP_PASSWORD=$(cat /vagrant/ucp_password)
         export UCP_IPADDR=$(cat /vagrant/ucp-vancouver-node1-ipaddr)
-        export UCP_URL=https://ucp.local
-        export DTR_URL=https://dtr.local
+        export UCP_URL=https://ucp.demo-gods.com
+        export DTR_URL=https://dtr.demo-gods.com
         export DTR_IPADDR=$(cat /vagrant/dtr-vancouver-node1-ipaddr)
         export SWARM_JOIN_TOKEN_WORKER=$(cat /vagrant/swarm-join-token-worker)
         export DTR_REPLICA_ID=$(cat /vagrant/dtr-replica-id)
-        sudo sh -c "echo '${UCP_IPADDR} ucp.local' >> /etc/hosts"
-        sudo sh -c "echo '${DTR_IPADDR} dtr.local' >> /etc/hosts"
+        sudo sh -c "echo '${UCP_IPADDR} ucp.demo-gods.com' >> /etc/hosts"
+        sudo sh -c "echo '${DTR_IPADDR} dtr.demo-gods.com' >> /etc/hosts"
         docker pull docker/ucp:2.1.3
         docker swarm join --token ${SWARM_JOIN_TOKEN_WORKER} ${UCP_IPADDR}:2377
         # Wait for Join to complete
@@ -99,7 +99,7 @@ Vagrant.configure(2) do |config|
     config.vm.define "worker-node1" do |worker_node1|
       worker_node1.vm.box = "ubuntu/xenial64"
       worker_node1.vm.network "private_network", ip: "172.28.128.12"
-      worker_node1.vm.hostname = "worker-node1"
+      worker_node1.vm.hostname = "worker-node1.demo-gods.com"
       config.vm.provider :virtualbox do |vb|
          vb.customize ["modifyvm", :id, "--memory", "2048"]
          vb.customize ["modifyvm", :id, "--cpus", "2"]
@@ -136,7 +136,7 @@ Vagrant.configure(2) do |config|
     config.vm.define "worker-node2" do |worker_node2|
       worker_node2.vm.box = "ubuntu/xenial64"
       worker_node2.vm.network "private_network", ip: "172.28.128.13"
-      worker_node2.vm.hostname = "worker-node2"
+      worker_node2.vm.hostname = "worker-node2.demo-gods.com"
       config.vm.provider :virtualbox do |vb|
          vb.customize ["modifyvm", :id, "--memory", "2048"]
          vb.customize ["modifyvm", :id, "--cpus", "2"]
@@ -199,7 +199,7 @@ Vagrant.configure(2) do |config|
           --mount type=bind,source=/home/ubuntu/ucp-bundle-admin,destination=/home/jenkins/ucp-bundle-admin \
           --mount type=bind,source=/home/ubuntu/scripts,destination=/home/jenkins/scripts \
           --mount type=bind,source=/home/ubuntu/notary,destination=/usr/local/bin/notary \
-          --label com.docker.ucp.mesh.http.8080=external_route=http://jenkins.local,internal_port=8080 \
+          --label com.docker.ucp.mesh.http.8080=external_route=http://jenkins.demo-gods.com,internal_port=8080 \
           --constraint 'node.labels.jenkins == master' yongshin/leroy-jenkins
         # Have Jenkins trust DTR
         export JENKINS_CONTAINER_ID=$(docker ps | grep leroy-jenkins | awk '{ print $1}')
@@ -211,7 +211,7 @@ Vagrant.configure(2) do |config|
     config.vm.define "worker-node3" do |worker_node3|
       worker_node3.vm.box = "ubuntu/xenial64"
       worker_node3.vm.network "private_network", ip: "172.28.128.14"
-      worker_node3.vm.hostname = "worker-node3"
+      worker_node3.vm.hostname = "worker-node3.demo-gods.com"
       config.vm.provider :virtualbox do |vb|
          vb.customize ["modifyvm", :id, "--memory", "2048"]
          vb.customize ["modifyvm", :id, "--cpus", "2"]
