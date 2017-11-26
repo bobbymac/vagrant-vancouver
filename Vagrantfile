@@ -75,8 +75,8 @@ Vagrant.configure(2) do |config|
         export DTR_IPADDR=$(cat /vagrant/dtr-vancouver-node1-ipaddr)
         export SWARM_JOIN_TOKEN_WORKER=$(cat /vagrant/swarm-join-token-worker)
         export DTR_REPLICA_ID=$(cat /vagrant/dtr-replica-id)
-        sudo sh -c "echo '${UCP_IPADDR} ucp.demo-gods.com' >> /etc/hosts"
-        sudo sh -c "echo '${DTR_IPADDR} dtr.demo-gods.com' >> /etc/hosts"
+        sudo sh -c "echo '${UCP_IPADDR} ucp.demo-gods.com ucp' >> /etc/hosts"
+        sudo sh -c "echo '${DTR_IPADDR} dtr.demo-gods.com dtr' >> /etc/hosts"
         docker pull docker/ucp:2.1.3
         docker swarm join --token ${SWARM_JOIN_TOKEN_WORKER} ${UCP_IPADDR}:2377
         # Wait for Join to complete
