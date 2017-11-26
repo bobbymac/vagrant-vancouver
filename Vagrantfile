@@ -7,7 +7,7 @@ Vagrant.configure(2) do |config|
     config.vm.define "ucp-vancouver-node1" do |ucp_vancouver_node1|
       ucp_vancouver_node1.vm.box = "ubuntu/xenial64"
       ucp_vancouver_node1.vm.network "private_network", ip: "172.28.128.10"
-      ucp_vancouver_node1.vm.hostname = "ucp.demo-gods.com
+      ucp_vancouver_node1.vm.hostname = "ucp.demo-gods.com"
       config.vm.provider :virtualbox do |vb|
          v.memory = 2048
          v.cpus = 2
