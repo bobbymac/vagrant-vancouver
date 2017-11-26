@@ -25,3 +25,4 @@ env.sh
 .DS_Store
 Vagrantfile~
 .*~
+*.swp
