@@ -28,8 +28,8 @@ Vagrant.configure(2) do |config|
         export UCP_PASSWORD=$(cat /vagrant/ucp_password)
         export HUB_USERNAME=$(cat /vagrant/hub_username)
         export HUB_PASSWORD=$(cat /vagrant/hub_password)
-        sudo sh -c "echo '${UCP_IPADDR} ucp.demo-gods.com' >> /etc/hosts"
-        sudo sh -c "echo '172.28.128.11 dtr.demo-gods.com' >> /etc/hosts"
+        sudo sh -c "echo '${UCP_IPADDR} ucp.demo-gods.com ucp' >> /etc/hosts"
+        sudo sh -c "echo '172.28.128.11 dtr.demo-gods.com dtr' >> /etc/hosts"
         docker login -u ${HUB_USERNAME} -p ${HUB_PASSWORD}
         docker pull docker/ucp:2.1.3
 	docker run --rm --name ucp -v /var/run/docker.sock:/var/run/docker.sock docker/ucp:2.1.3 install --host-address ${UCP_IPADDR} --admin-password ${UCP_PASSWORD} --san ucp.demo-gods.com --license $(cat /vagrant/docker_subscription.lic)
