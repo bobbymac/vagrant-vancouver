@@ -9,9 +9,8 @@ Vagrant.configure(2) do |config|
       ucp_vancouver_node1.vm.network "private_network", ip: "172.28.128.10"
       ucp_vancouver_node1.vm.hostname = "ucp.demo-gods.com/
       config.vm.provider :virtualbox do |vb|
-         vb.customize ["modifyvm", :id, "--memory", "2048"]
-         vb.customize ["modifyvm", :id, "--cpus", "2"]
-         vb.customize ["modifyvm", :id, "--natdnshostresolver1", "on"]
+         v.memory = 2048
+         v.cpus = 2
          vb.name = "ucp-vancouver-node1"
       end
       ucp_vancouver_node1.vm.provision "shell", inline: <<-SHELL
@@ -47,9 +46,8 @@ Vagrant.configure(2) do |config|
       dtr_vancouver_node1.vm.network "private_network", ip: "172.28.128.11"
       dtr_vancouver_node1.vm.hostname = "dtr.demo-gods.com"
       config.vm.provider :virtualbox do |vb|
-         vb.customize ["modifyvm", :id, "--memory", "2048"]
-         vb.customize ["modifyvm", :id, "--cpus", "2"]
-         vb.customize ["modifyvm", :id, "--natdnshostresolver1", "on"]
+         v.memory = 2048
+         v.cpus = 2
          vb.name = "dtr-vancouver-node1"
       end
       dtr_vancouver_node1.vm.provision "shell", inline: <<-SHELL
@@ -101,9 +99,8 @@ Vagrant.configure(2) do |config|
       worker_node1.vm.network "private_network", ip: "172.28.128.12"
       worker_node1.vm.hostname = "worker-node1.demo-gods.com"
       config.vm.provider :virtualbox do |vb|
-         vb.customize ["modifyvm", :id, "--memory", "2048"]
-         vb.customize ["modifyvm", :id, "--cpus", "2"]
-         vb.customize ["modifyvm", :id, "--natdnshostresolver1", "on"]
+         v.memory = 2048
+         v.cpus = 2
          vb.name = "worker-node1"
       end
       worker_node1.vm.provision "shell", inline: <<-SHELL
@@ -138,9 +135,8 @@ Vagrant.configure(2) do |config|
       worker_node2.vm.network "private_network", ip: "172.28.128.13"
       worker_node2.vm.hostname = "worker-node2.demo-gods.com"
       config.vm.provider :virtualbox do |vb|
-         vb.customize ["modifyvm", :id, "--memory", "2048"]
-         vb.customize ["modifyvm", :id, "--cpus", "2"]
-         vb.customize ["modifyvm", :id, "--natdnshostresolver1", "on"]
+         v.memory = 2048
+         v.cpus = 2
          vb.name = "worker-node2"
       end
       worker_node2.vm.provision "shell", inline: <<-SHELL
@@ -213,9 +209,8 @@ Vagrant.configure(2) do |config|
       worker_node3.vm.network "private_network", ip: "172.28.128.14"
       worker_node3.vm.hostname = "worker-node3.demo-gods.com"
       config.vm.provider :virtualbox do |vb|
-         vb.customize ["modifyvm", :id, "--memory", "2048"]
-         vb.customize ["modifyvm", :id, "--cpus", "2"]
-         vb.customize ["modifyvm", :id, "--natdnshostresolver1", "on"]
+         v.memory = 2048
+         v.cpus = 2
          vb.name = "worker-node3"
       end
       worker_node3.vm.provision "shell", inline: <<-SHELL
