@@ -11,7 +11,7 @@ Vagrant.configure(2) do |config|
       config.vm.provider :virtualbox do |vb|
          v.memory = 2048
          v.cpus = 2
-         vb.name = "ucp-vancouver-node1"
+         v.name = "ucp-vancouver-node1"
       end
       ucp_vancouver_node1.vm.provision "shell", inline: <<-SHELL
         sudo apt-get install -y apt-transport-https ca-certificates ntpdate curl software-properties-common
@@ -48,7 +48,7 @@ Vagrant.configure(2) do |config|
       config.vm.provider :virtualbox do |vb|
          v.memory = 2048
          v.cpus = 2
-         vb.name = "dtr-vancouver-node1"
+         v.name = "dtr-vancouver-node1"
       end
       dtr_vancouver_node1.vm.provision "shell", inline: <<-SHELL
         sudo apt-get install -y apt-transport-https ca-certificates ntpdate curl software-properties-common
@@ -101,7 +101,7 @@ Vagrant.configure(2) do |config|
       config.vm.provider :virtualbox do |vb|
          v.memory = 2048
          v.cpus = 2
-         vb.name = "worker-node1"
+         v.name = "worker-node1"
       end
       worker_node1.vm.provision "shell", inline: <<-SHELL
         sudo apt-get install -y apt-transport-https ca-certificates ntpdate curl software-properties-common
@@ -137,7 +137,7 @@ Vagrant.configure(2) do |config|
       config.vm.provider :virtualbox do |vb|
          v.memory = 2048
          v.cpus = 2
-         vb.name = "worker-node2"
+         v.name = "worker-node2"
       end
       worker_node2.vm.provision "shell", inline: <<-SHELL
         sudo apt-get install -y apt-transport-https ca-certificates ntpdate curl software-properties-common jq zip
@@ -211,7 +211,7 @@ Vagrant.configure(2) do |config|
       config.vm.provider :virtualbox do |vb|
          v.memory = 2048
          v.cpus = 2
-         vb.name = "worker-node3"
+         v.name = "worker-node3"
       end
       worker_node3.vm.provision "shell", inline: <<-SHELL
         sudo apt-get install -y apt-transport-https ca-certificates ntpdate curl software-properties-common
